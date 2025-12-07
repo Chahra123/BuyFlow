@@ -27,6 +27,26 @@ class _StocksPageState extends State<StocksPage> {
   }
 
   // Dialogue Ajouter / Modifier
+  void _showSnackBar(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(isError ? Icons.error_outline : Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(message, style: const TextStyle(fontSize: 16)),
+          ],
+        ),
+        backgroundColor: isError ? Colors.red.shade600 : const Color(0xFF0074D9),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+// Remplace entièrement ta méthode _showStockDialog par celle-ci
   void _showStockDialog({Stock? stock}) {
     final isEdit = stock != null;
     final libelleCtrl = TextEditingController(text: stock?.libelleStock ?? '');
@@ -35,10 +55,13 @@ class _StocksPageState extends State<StocksPage> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(isEdit ? "Modifier le stock" : "Nouveau stock",
-            textAlign: TextAlign.center),
+        title: Text(
+          isEdit ? "Modifier le stock" : "Nouveau stock",
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Color(0xFF00509E)),
+        ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -55,7 +78,7 @@ class _StocksPageState extends State<StocksPage> {
                 controller: qteCtrl,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: "Quantité",
+                  labelText: "Quantité actuelle",
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -73,17 +96,18 @@ class _StocksPageState extends State<StocksPage> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text("Annuler")),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Annuler"),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0074D9)),
             onPressed: () async {
               final libelle = libelleCtrl.text.trim();
               final qte = int.tryParse(qteCtrl.text) ?? 0;
               final qteMin = int.tryParse(qteMinCtrl.text) ?? 0;
 
               if (libelle.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Le libellé est requis")));
+                _showSnackBar("Le libellé est obligatoire", isError: true);
                 return;
               }
 
@@ -97,18 +121,18 @@ class _StocksPageState extends State<StocksPage> {
               try {
                 if (isEdit) {
                   await service.updateStock(newStock);
+                  _showSnackBar("Stock modifié avec succès !");
                 } else {
                   await service.addStock(newStock);
+                  _showSnackBar("Stock ajouté avec succès !");
                 }
-                Navigator.pop(ctx);
+                Navigator.of(context).pop();
                 _refreshStocks();
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Erreur : $e")));
+                _showSnackBar("Erreur lors de l'opération", isError: true);
               }
             },
-            child: Text(isEdit ? "Modifier" : "Ajouter",
-                style: const TextStyle(color: Colors.white)),
+            child: Text(isEdit ? "Modifier" : "Ajouter", style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -119,10 +143,10 @@ class _StocksPageState extends State<StocksPage> {
   Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
-        primaryColor: Colors.blue,
+        primaryColor: Color(0xFF0074D9),
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blue,
+          backgroundColor: Color(0xFF0074D9),
           foregroundColor: Colors.white,
           elevation: 4,
           centerTitle: true,
@@ -131,7 +155,7 @@ class _StocksPageState extends State<StocksPage> {
       child: Scaffold(
         appBar: AppBar(title: const Text("Liste des stocks")),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.blue,
+          backgroundColor: Color(0xFF0074D9),
           child: const Icon(Icons.add, color: Colors.white),
           onPressed: () => _showStockDialog(),
         ),
@@ -139,7 +163,7 @@ class _StocksPageState extends State<StocksPage> {
           future: stocks,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: Colors.blue));
+              return const Center(child: CircularProgressIndicator(color: Color(0xFF0074D9)));
             }
             if (snapshot.hasError) {
               return Center(child: Text("Erreur : ${snapshot.error}", style: const TextStyle(color: Colors.red)));
@@ -162,7 +186,7 @@ class _StocksPageState extends State<StocksPage> {
                   margin: const EdgeInsets.symmetric(vertical: 6),
                   child: ListTile(
                     leading: Icon(Icons.inventory,
-                        size: 36, color: isLow ? Colors.red : Colors.blue),
+                        size: 36, color: isLow ? Colors.red : Color(0xFF0074D9)),
                     title: Text(s.libelleStock,
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -175,30 +199,32 @@ class _StocksPageState extends State<StocksPage> {
                         const PopupMenuItem(value: "edit", child: Text("Modifier")),
                         const PopupMenuItem(value: "delete", child: Text("Supprimer", style: TextStyle(color: Colors.red))),
                       ],
-                      onSelected: (val) async {
-                        if (val == "edit") {
+                      onSelected: (value) async {
+                        if (value == "edit") {
                           _showStockDialog(stock: s);
-                        } else if (val == "delete" && s.idStock != null) {
+                        } else if (value == "delete" && s.idStock != null) {
                           final confirm = await showDialog<bool>(
                             context: context,
                             builder: (_) => AlertDialog(
-                              title: const Text("Confirmer"),
-                              content: Text("Supprimer ${s.libelleStock} ?"),
+                              title: const Text("Supprimer ?"),
+                              content: Text("Voulez-vous vraiment supprimer « ${s.libelleStock} » ?"),
                               actions: [
                                 TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Non")),
                                 TextButton(
-                                    onPressed: () => Navigator.pop(context, true),
-                                    child: const Text("Oui", style: TextStyle(color: Colors.red))),
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text("Oui", style: TextStyle(color: Colors.red)),
+                                ),
                               ],
                             ),
                           );
+
                           if (confirm == true) {
                             try {
                               await service.deleteStock(s.idStock!);
+                              _showSnackBar("Stock supprimé avec succès !");
                               _refreshStocks();
                             } catch (e) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(content: Text("Erreur suppression")));
+                              _showSnackBar("Échec de la suppression", isError: true);
                             }
                           }
                         }
