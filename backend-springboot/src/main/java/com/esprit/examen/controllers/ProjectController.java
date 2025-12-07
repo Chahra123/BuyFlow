@@ -99,7 +99,7 @@ public class ProjectController {
         return fournisseur;
     }
 
-    @DeleteMapping("/{fournisseur-id}")
+    @DeleteMapping("/fournisseur/{fournisseur-id}")
     public void removeFournisseur(@PathVariable("fournisseur-id") Long fournisseurId) {
         fournisseurService.deleteFournisseur(fournisseurId);
     }
@@ -131,7 +131,7 @@ public class ProjectController {
     }
 
 
-    @DeleteMapping("/{operateur-id}")
+    @DeleteMapping("/operateur/{operateur-id}")
     public void removeOperateur(@PathVariable("operateur-id") Long operateurId) {
         operateurService.deleteOperateur(operateurId);
     }
@@ -209,7 +209,7 @@ public class ProjectController {
         return categorieProduitService.retrieveCategorieProduit(categorieProduitId);
     }
 
-    @DeleteMapping("{categorieProduit-id}")
+    @DeleteMapping("/categorieproduit/{categorieProduit-id}")
     public void removeCategorieProduit(@PathVariable("categorieProduit-id") Long categorieProduitId) {
         categorieProduitService.deleteCategorieProduit(categorieProduitId);
     }
@@ -235,7 +235,7 @@ public class ProjectController {
         return produitService.addProduit(p);
     }
 
-    @DeleteMapping("/{produit-id}")
+    @DeleteMapping("/produit/{produit-id}")
     public void removeProduit(@PathVariable("produit-id") Long produitId) {
         produitService.deleteProduit(produitId);
     }
@@ -288,7 +288,7 @@ public class ProjectController {
         Stock stock = stockService.addStock(s);
         return stock;
     }
-    @DeleteMapping("/{stock-id}")
+    @DeleteMapping("/stock/{stock-id}")
     public void removeStock(@PathVariable("stock-id") Long stockId) {
         stockService.deleteStock(stockId);
     }
@@ -325,7 +325,7 @@ public class ProjectController {
         return secteurActivite;
     }
 
-    @DeleteMapping("/{secteurActivite-id}")
+    @DeleteMapping("/secteuractivite/{secteurActivite-id}")
     public void removeSecteurActivite(@PathVariable("secteurActivite-id") Long secteurActiviteId) {
         secteurActiviteService.deleteSecteurActivite(secteurActiviteId);
     }
