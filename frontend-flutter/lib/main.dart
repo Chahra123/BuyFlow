@@ -1,5 +1,8 @@
-import 'package:buy_flow/pages/stock_page.dart';
 import 'package:flutter/material.dart';
+import 'package:buy_flow/pages/stock_page.dart';
+import 'package:buy_flow/pages/produit_page.dart';
+import 'package:buy_flow/pages/categorie_page.dart';
+import 'package:buy_flow/pages/reglement_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -67,12 +70,17 @@ class WelcomeScreen extends StatelessWidget {
             const SizedBox(height: 100),
             ElevatedButton.icon(
               icon: const Icon(Icons.arrow_forward_ios_rounded, size: 24),
-              label: const Text("Entrer dans l'app", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+              label: const Text(
+                "Entrer dans l'app",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0074D9),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 22),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
                 elevation: 12,
                 shadowColor: const Color(0xFF0074D9).withOpacity(0.5),
               ),
@@ -87,6 +95,7 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
+
 class HomeWithDrawer extends StatefulWidget {
   const HomeWithDrawer({super.key});
 
@@ -95,11 +104,16 @@ class HomeWithDrawer extends StatefulWidget {
 }
 
 class _HomeWithDrawerState extends State<HomeWithDrawer> {
+  int _selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset('lib/assets/logo-buyflow-design.png', height: 42),
+        title: Image.asset(
+          'lib/assets/logo-buyflow-design.png',
+          height: 42,
+        ),
         backgroundColor: const Color(0xFF00509E),
         centerTitle: true,
         elevation: 4,
@@ -111,20 +125,62 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             DrawerHeader(
               decoration: const BoxDecoration(color: Colors.white),
               child: Center(
-                child: Image.asset('lib/assets/logo-buyflow.png', height: 90),
+                child: Image.asset(
+                  'lib/assets/logo-buyflow.png',
+                  height: 90,
+                ),
               ),
             ),
             ListTile(
               leading: const Icon(Icons.inventory, color: Color(0xFF0074D9)),
               title: const Text("Gestion de stocks", style: TextStyle(fontSize: 18)),
-              selected: true,
+              selected: _selectedIndex == 0,
               selectedTileColor: Colors.blue.shade50,
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                setState(() => _selectedIndex = 0);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_bag, color: Color(0xFF0074D9)),
+              title: const Text("Produits", style: TextStyle(fontSize: 18)),
+              selected: _selectedIndex == 1,
+              selectedTileColor: Colors.blue.shade50,
+              onTap: () {
+                setState(() => _selectedIndex = 1);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.category, color: Color(0xFF0074D9)),
+              title: const Text("Catégories", style: TextStyle(fontSize: 18)),
+              selected: _selectedIndex == 2,
+              selectedTileColor: Colors.blue.shade50,
+              onTap: () {
+                setState(() => _selectedIndex = 2);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.payments, color: Color(0xFF0074D9)),
+              title: const Text("Paiements", style: TextStyle(fontSize: 18)),
+              selected: _selectedIndex == 3,
+              selectedTileColor: Colors.blue.shade50,
+              onTap: () {
+                setState(() => _selectedIndex = 3);
+                Navigator.pop(context);
+              },
             ),
           ],
         ),
       ),
-      body: const StocksPage(),
+      body: _selectedIndex == 0
+          ? const StocksPage()
+          : _selectedIndex == 1
+          ? const ProduitsPage()
+          : _selectedIndex == 2
+          ? const CategoriesPage()
+          : const ReglementsPage(),
     );
   }
 }
