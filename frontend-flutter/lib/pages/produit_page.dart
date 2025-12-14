@@ -155,7 +155,6 @@ class _ProduitsPageState extends State<ProduitsPage> {
                   result = produit!;
                   _showSnackBar("Produit modifié avec succès !");
                 } else {
-                  await service.addProduit(newProduit);
                   result = await service.addProduit(newProduit);
                   _showSnackBar("Produit ajouté avec succès !");
                 }
