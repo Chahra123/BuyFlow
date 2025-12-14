@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/reglement.dart';
 
 class ReglementService {
-  final String baseUrl = "http://localhost:9091";
+  final String baseUrl = "http://192.168.1.17:9091";
 
   Future<List<Reglement>> getReglements() async {
     final response = await http.get(Uri.parse("$baseUrl/retrieve-all-reglements"));

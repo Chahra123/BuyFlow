@@ -4,10 +4,9 @@ import 'package:http/http.dart' as http;
 import '../models/produit.dart';
 
 class ProduitService {
-  final String baseUrl = "http://localhost:9091";
+  final String baseUrl = "http://192.168.1.17:9091";
 
   Future<List<Produit>> getProduits() async {
-    // ⚠️ backend endpoint écrit "/prdouits" (typo) donc on l'utilise tel quel
     final response = await http.get(Uri.parse("$baseUrl/prdouits"));
 
     if (response.statusCode == 200) {
@@ -19,8 +18,6 @@ class ProduitService {
   }
 
   Future<Produit> addProduit(Produit produit) async {
-    // ⚠️ backend: @PostMapping sans path => POST "/"
-    // Donc on doit appeler baseUrl + "/"
     final response = await http.post(
       Uri.parse("$baseUrl/"),
       headers: {"Content-Type": "application/json"},
@@ -53,6 +50,29 @@ class ProduitService {
 
     if (response.statusCode != 200) {
       throw Exception("Erreur lors de la suppression du produit");
+    }
+  }
+
+  Future<void> assignProduitToStock(int idProduit, int idStock) async {
+    final response = await http.put(
+      Uri.parse("$baseUrl/assignProduitToStock/$idProduit/$idStock"),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Erreur lors de l'assignation au stock");
+    }
+  }
+
+  Future<List<Produit>> getProduitsByStock(int idStock) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/getProduitByStock/$idStock"),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList.map((json) => Produit.fromJson(json)).toList();
+    } else {
+      throw Exception("Erreur lors du chargement des produits par stock");
     }
   }
 }

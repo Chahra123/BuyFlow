@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/stock.dart';
 import '../services/produits_service.dart';
 import '../models/produit.dart';
+import '../services/stocks_service.dart';
 
 class ProduitsPage extends StatefulWidget {
   const ProduitsPage({super.key});
@@ -13,9 +15,13 @@ class _ProduitsPageState extends State<ProduitsPage> {
   final ProduitService service = ProduitService();
   late Future<List<Produit>> produits;
 
+  late Future<List<Stock>> stocksFuture;
+  int? selectedStockId;
+
   @override
   void initState() {
     super.initState();
+    stocksFuture = StockService().getStocks();
     _refreshProduits();
   }
 
@@ -52,7 +58,6 @@ class _ProduitsPageState extends State<ProduitsPage> {
     final codeCtrl = TextEditingController(text: produit?.codeProduit ?? '');
     final libelleCtrl = TextEditingController(text: produit?.libelleProduit ?? '');
     final prixCtrl = TextEditingController(text: produit?.prix.toString() ?? '');
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -90,6 +95,30 @@ class _ProduitsPageState extends State<ProduitsPage> {
                   border: OutlineInputBorder(),
                 ),
               ),
+              const SizedBox(height: 16),
+              FutureBuilder<List<Stock>>(
+                future: stocksFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text("Aucun stock disponible");
+                  }
+                  return DropdownButtonFormField<int>(
+                    value: selectedStockId,
+                    decoration: const InputDecoration(
+                      labelText: "Stock",
+                      border: OutlineInputBorder(),
+                    ),
+                    items: snapshot.data!.map((s) => DropdownMenuItem(
+                      value: s.idStock!,
+                      child: Text(s.libelleStock),
+                    )).toList(),
+                    onChanged: (value) => selectedStockId = value,
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -120,13 +149,21 @@ class _ProduitsPageState extends State<ProduitsPage> {
               );
 
               try {
+                Produit result;
                 if (isEdit) {
                   await service.updateProduit(newProduit);
+                  result = produit!;
                   _showSnackBar("Produit modifié avec succès !");
                 } else {
                   await service.addProduit(newProduit);
+                  result = await service.addProduit(newProduit);
                   _showSnackBar("Produit ajouté avec succès !");
                 }
+
+                if (selectedStockId != null) {
+                  await service.assignProduitToStock(result.idProduit!, selectedStockId!);
+                }
+
                 Navigator.of(context).pop();
                 _refreshProduits();
               } catch (e) {
@@ -191,7 +228,7 @@ class _ProduitsPageState extends State<ProduitsPage> {
                       p.libelleProduit,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                     ),
-                    subtitle: Text("Code : ${p.codeProduit}  •  Prix : ${p.prix}"),
+                    subtitle: Text("Code : ${p.codeProduit}  •  Prix : ${p.prix} ${p.libelleStock != null ? '• Stock : ${p.libelleStock}' : ''}"),
                     trailing: PopupMenuButton(
                       icon: const Icon(Icons.more_vert),
                       itemBuilder: (_) => [

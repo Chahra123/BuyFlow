@@ -4,10 +4,10 @@ import 'package:http/http.dart' as http;
 import '../models/stock.dart';
 
 class StockService {
-  final String baseUrl = "http://localhost:9091"; //Laptop ip address
+  final String baseUrl = "http://192.168.1.17:9091/stocks"; //Laptop ip address
 
   Future<List<Stock>> getStocks() async {
-    final response = await http.get(Uri.parse("$baseUrl/retrieve-all-stocks"));
+    final response = await http.get(Uri.parse(baseUrl));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -29,7 +29,7 @@ class StockService {
 
   Future<Stock> addStock(Stock stock) async {
     final response = await http.post(
-      Uri.parse("$baseUrl/stocks"),
+      Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
       body: json.encode(stock.toJson()),
     );
@@ -43,7 +43,7 @@ class StockService {
 
   Future<Stock> updateStock(Stock stock) async {
     final response = await http.put(
-      Uri.parse("$baseUrl/stocks"),
+      Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
       body: json.encode(stock.toJson()),
     );
@@ -56,7 +56,7 @@ class StockService {
   }
 
   Future<void> deleteStock(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl/stock/$id"));
+    final response = await http.delete(Uri.parse("$baseUrl/$id"));
 
     if (response.statusCode != 200) {
       throw Exception("Erreur lors de la suppression");

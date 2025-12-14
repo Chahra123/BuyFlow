@@ -5,6 +5,8 @@ class Produit {
   final double prix;
   final String? dateCreation;
   final String? dateDerniereModification;
+  final int? idStock;
+  final String? libelleStock;
 
   Produit({
     this.idProduit,
@@ -13,6 +15,8 @@ class Produit {
     required this.prix,
     this.dateCreation,
     this.dateDerniereModification,
+    this.idStock,
+    this.libelleStock,
   });
 
   factory Produit.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,8 @@ class Produit {
           : (json['prix'] as num).toDouble(),
       dateCreation: json['dateCreation']?.toString(),
       dateDerniereModification: json['dateDerniereModification']?.toString(),
+      idStock: json['idStock'],
+      libelleStock: json['libelleStock'],
     );
   }
 
@@ -36,6 +42,7 @@ class Produit {
       "prix": prix,
       "dateCreation": dateCreation,
       "dateDerniereModification": dateDerniereModification,
+      "idStock": idStock,
     };
   }
 }
