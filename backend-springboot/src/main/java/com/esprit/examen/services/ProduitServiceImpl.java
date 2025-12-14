@@ -3,6 +3,8 @@ package com.esprit.examen.services;
 import java.util.Date;
 import java.util.List;
 import javax.transaction.Transactional;
+
+import com.esprit.examen.dto.ProduitDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.esprit.examen.entities.CategorieProduit;
@@ -65,6 +67,26 @@ public class ProduitServiceImpl implements IProduitService {
 		produit.setStock(stock);
 		produitRepository.save(produit);
 
+	}
+
+	@Override
+	public List<Produit> getProduitsByStock(Long idStock) {
+		return produitRepository.findByStock_IdStock(idStock);
+
+	}
+
+	@Override
+	public ProduitDTO toDTO(Produit p) {
+		return new ProduitDTO(
+				p.getIdProduit(),
+				p.getCodeProduit(),
+				p.getLibelleProduit(),
+				p.getPrix(),
+				p.getDateCreation() != null ? p.getDateCreation().toString() : null,
+				p.getDateDerniereModification() != null ? p.getDateDerniereModification().toString() : null,
+				p.getStock() != null ? p.getStock().getIdStock() : null,
+				p.getStock() != null ? p.getStock().getLibelleStock() : null
+		);
 	}
 
 
