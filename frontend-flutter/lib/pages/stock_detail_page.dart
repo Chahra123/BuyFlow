@@ -136,6 +136,29 @@ class _StockDetailPageState extends State<StockDetailPage> {
                             leading: const Icon(Icons.shopping_bag),
                             title: Text(p.libelleProduit),
                             subtitle: Text("Code: ${p.codeProduit} | Prix: ${p.prix}"),
+                            trailing: PopupMenuButton(
+                              itemBuilder: (_) => [
+                                const PopupMenuItem(
+                                  value: "remove",
+                                  child: Text("Désassigner", style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                                onSelected: (value) async {
+                                  if (value == "remove") {
+                                    try {
+                                      await produitService.removeProduitFromStock(p.idProduit!);
+                                      _refreshProduits();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text("Produit désassigné")),
+                                      );
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Erreur : $e")),
+                                      );
+                                    }
+                                  }
+                                },
+                            ),
                           );
                         },
                       );
@@ -167,5 +190,11 @@ class _StockDetailPageState extends State<StockDetailPage> {
         ),
       ],
     );
+  }
+
+  void _refreshProduits() {
+    setState(() {
+      produitsDansStock = produitService.getProduitsByStock(widget.stock.idStock!);
+    });
   }
 }

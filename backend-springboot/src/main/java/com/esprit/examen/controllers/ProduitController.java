@@ -94,5 +94,9 @@ public class ProduitController {
 //	}
 
 
+    @PutMapping("/removeProduitFromStock/{idProduit}")
+    public void removeProduitFromStock(@PathVariable Long idProduit) {
+        produitService.removeProduitFromStock(idProduit);
+    }
 
 }

@@ -23,5 +23,5 @@ public interface IProduitService {
 
 	public ProduitDTO toDTO(Produit p);
 
-
+	void removeProduitFromStock(Long idProduit);
 }

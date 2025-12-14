@@ -75,4 +75,13 @@ class ProduitService {
       throw Exception("Erreur lors du chargement des produits par stock");
     }
   }
+
+  Future<void> removeProduitFromStock(int idProduit) async {
+    final response = await http.put(
+      Uri.parse("$baseUrl/removeProduitFromStock/$idProduit"),
+    );
+    if (response.statusCode != 200) {
+      throw Exception("Erreur désassignation");
+    }
+  }
 }

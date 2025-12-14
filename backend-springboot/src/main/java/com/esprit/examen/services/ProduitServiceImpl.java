@@ -89,5 +89,12 @@ public class ProduitServiceImpl implements IProduitService {
 		);
 	}
 
+	public void removeProduitFromStock(Long idProduit) {
+		Produit produit = produitRepository.findById(idProduit)
+				.orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+		produit.setStock(null);
+		produitRepository.save(produit);
+	}
+
 
 }
