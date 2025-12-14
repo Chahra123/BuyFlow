@@ -7,6 +7,7 @@ class Produit {
   final String? dateDerniereModification;
   final int? idStock;
   final String? libelleStock;
+  final int? stockQte;
 
   Produit({
     this.idProduit,
@@ -17,6 +18,7 @@ class Produit {
     this.dateDerniereModification,
     this.idStock,
     this.libelleStock,
+    this.stockQte
   });
 
   factory Produit.fromJson(Map<String, dynamic> json) {
@@ -31,6 +33,7 @@ class Produit {
       dateDerniereModification: json['dateDerniereModification']?.toString(),
       idStock: json['idStock'],
       libelleStock: json['libelleStock'],
+      stockQte: json['stockQte'],
     );
   }
 
@@ -43,6 +46,7 @@ class Produit {
       "dateCreation": dateCreation,
       "dateDerniereModification": dateDerniereModification,
       "idStock": idStock,
+      "stockQte": stockQte
     };
   }
 }

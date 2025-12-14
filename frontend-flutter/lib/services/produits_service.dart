@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../models/MouvementStock.dart';
 import '../models/produit.dart';
 
 class ProduitService {
@@ -82,6 +83,28 @@ class ProduitService {
     );
     if (response.statusCode != 200) {
       throw Exception("Erreur désassignation");
+    }
+  }
+
+  Future<MouvementStock> effectuerMouvement({
+    required int produitId,
+    required int quantite,
+    required String type, // "ENTREE" ou "SORTIE"
+  }) async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/mouvements"),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode({
+        "produitId": produitId,
+        "quantite": quantite,
+        "type": type,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return MouvementStock.fromJson(json.decode(response.body));
+    } else {
+      throw Exception("Erreur lors du mouvement de stock");
     }
   }
 }
