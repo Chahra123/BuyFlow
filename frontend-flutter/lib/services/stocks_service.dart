@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/stock.dart';
 
 class StockService {
-  final String baseUrl = "http://192.168.1.17:9091/stocks"; //Laptop ip address
+  final String baseUrl = "http://192.168.1.14:9091/stocks";
 
   Future<List<Stock>> getStocks() async {
     final response = await http.get(Uri.parse(baseUrl));
@@ -19,7 +19,6 @@ class StockService {
 
   Future<Stock> getStockById(int id) async {
     final response = await http.get(Uri.parse("$baseUrl/$id"));
-    
 
     if (response.statusCode == 200) {
       return Stock.fromJson(json.decode(response.body));
@@ -61,6 +60,15 @@ class StockService {
 
     if (response.statusCode != 200) {
       throw Exception("Erreur lors de la suppression");
+    }
+  }
+
+  Future<int> getQteTotale(int idStock) async {
+    final response = await http.get(Uri.parse("$baseUrl/$idStock/qteTotale"));
+    if (response.statusCode == 200) {
+      return int.parse(response.body);
+    } else {
+      throw Exception("Erreur lors de la récupération de qteTotale");
     }
   }
 }

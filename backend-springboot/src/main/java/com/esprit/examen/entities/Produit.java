@@ -28,6 +28,7 @@ public class Produit implements Serializable {
 	private String codeProduit;
 	private String libelleProduit;
 	private float prix;
+    private Integer qteMin;
 	private LocalDate dateCreation;
 	private LocalDate dateDerniereModification;
 	@ManyToOne

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/stock.dart';
 import '../models/produit.dart';
 import '../services/produits_service.dart';
+import '../services/stocks_service.dart';  // Import ajouté
 
 class StockDetailPage extends StatefulWidget {
   final Stock stock;
@@ -13,13 +14,15 @@ class StockDetailPage extends StatefulWidget {
 
 class _StockDetailPageState extends State<StockDetailPage> {
   final ProduitService produitService = ProduitService();
+  final StockService stockService = StockService();  // Ajouté
   late Future<List<Produit>> produitsDansStock;
+  late Future<int> qteTotale;  // Ajouté
 
   @override
   void initState() {
     super.initState();
-    produitsDansStock =
-        produitService.getProduitsByStock(widget.stock.idStock!);
+    produitsDansStock = produitService.getProduitsByStock(widget.stock.idStock!);
+    qteTotale = stockService.getQteTotale(widget.stock.idStock!);  // Ajouté
   }
 
   @override
@@ -80,6 +83,22 @@ class _StockDetailPageState extends State<StockDetailPage> {
                               "Quantité minimum",
                               widget.stock.qteMin.toString(),
                               Icons.warning_amber),
+                          const SizedBox(height: 16),
+                          FutureBuilder<int>(  // Ajouté pour qteTotale
+                            future: qteTotale,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+                              if (snapshot.hasError) {
+                                return Text("Erreur : ${snapshot.error}");
+                              }
+                              return _buildInfoRow(
+                                  "Quantité totale",
+                                  snapshot.data.toString(),
+                                  Icons.inventory_2);
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -143,7 +162,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
 
                                       final qte = qteSnapshot.data!;
                                       final bool isLow =
-                                          qte <= widget.stock.qteMin;
+                                          qte <= widget.stock.qteMin;  // Ajuster si qteMin par produit
 
                                       return Text(
                                         "Quantité : $qte",
@@ -231,6 +250,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
     setState(() {
       produitsDansStock =
           produitService.getProduitsByStock(widget.stock.idStock!);
+      qteTotale = stockService.getQteTotale(widget.stock.idStock!);
     });
   }
 }

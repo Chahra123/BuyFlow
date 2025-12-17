@@ -40,4 +40,9 @@ public class StockController {
     public Stock modifyStock(@RequestBody Stock stock) {
         return stockService.updateStock(stock);
     }
+
+    @GetMapping("/{id}/qteTotale")
+    public int getQteTotale(@PathVariable Long id) {
+        return stockService.getQteTotale(id);
+    }
 }
