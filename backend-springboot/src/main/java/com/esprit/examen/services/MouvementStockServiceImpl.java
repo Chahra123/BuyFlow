@@ -20,13 +20,14 @@ public class MouvementStockServiceImpl implements IMouvementStockService {
     private ProduitRepository produitRepository;
 
     public MouvementStock effectuerMouvement(Long produitId, int quantite, TypeMouvement type) {
-
+        if (type == TypeMouvement.SORTIE) {
+            int qteDisponible = calculerQuantiteProduit(produitRepository.findById(produitId).orElseThrow(() -> new RuntimeException("Produit non trouvé")));
+            if (qteDisponible < quantite) throw new RuntimeException("Quantité insuffisante");
+        }
         Produit produit = produitRepository.findById(produitId).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
-
         if (produit.getStock() == null) {
             throw new RuntimeException("Produit non assigné à un stock");
         }
-
         // Vérification stock AVANT sortie
         if (type == TypeMouvement.SORTIE) {
             int qteDisponible = calculerQuantiteProduit(produit);
@@ -34,12 +35,10 @@ public class MouvementStockServiceImpl implements IMouvementStockService {
                 throw new RuntimeException("Stock insuffisant");
             }
         }
-
         MouvementStock mouvement = new MouvementStock();
         mouvement.setProduit(produit);
         mouvement.setQuantite(quantite);
         mouvement.setType(type);
-
         return mouvementStockRepository.save(mouvement);
     }
 

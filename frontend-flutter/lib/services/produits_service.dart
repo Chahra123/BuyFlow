@@ -5,7 +5,7 @@ import '../models/MouvementStock.dart';
 import '../models/produit.dart';
 
 class ProduitService {
-  final String baseUrl = "http://192.168.1.17:9091";
+  final String baseUrl = "http://192.168.1.14:9091";
 
   Future<List<Produit>> getProduits() async {
     final response = await http.get(Uri.parse("$baseUrl/prdouits"));

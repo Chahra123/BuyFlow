@@ -16,4 +16,7 @@ public interface IStockService {
 	Stock retrieveStock(Long id);
 
 	String retrieveStatusStock();
+
+    int getQteTotale(Long idStock);
+
 }
