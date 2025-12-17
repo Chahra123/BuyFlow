@@ -21,7 +21,9 @@ class _ProduitsPageState extends State<ProduitsPage> {
   void initState() {
     super.initState();
     stocksFuture = StockService().getStocks();
-    produits = _loadProduitsAvecQuantite();
+    setState(() {
+      produits = _loadProduitsAvecQuantite();
+    });
   }
 
   Future<List<Produit>> _loadProduitsAvecQuantite() async {
@@ -77,6 +79,9 @@ class _ProduitsPageState extends State<ProduitsPage> {
     final codeCtrl = TextEditingController(text: produit?.codeProduit ?? '');
     final libelleCtrl = TextEditingController(text: produit?.libelleProduit ?? '');
     final prixCtrl = TextEditingController(text: produit?.prix.toString() ?? '');
+    final qteInitialeCtrl = TextEditingController(text: '0');
+
+    int? selectedStockId = produit?.idStock;
 
     showDialog(
       context: context,
@@ -116,28 +121,38 @@ class _ProduitsPageState extends State<ProduitsPage> {
                 ),
               ),
               const SizedBox(height: 16),
+              TextField(
+                controller: qteInitialeCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: "Quantité initiale",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
               FutureBuilder<List<Stock>>(
                 future: stocksFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const CircularProgressIndicator();
                   }
-                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Text("Aucun stock disponible");
+                  if (snapshot.hasError) {
+                    return Text("Erreur : ${snapshot.error}");
                   }
+                  final stocks = snapshot.data ?? [];
                   return DropdownButtonFormField<int>(
-                    value: selectedStockId,
                     decoration: const InputDecoration(
                       labelText: "Stock",
                       border: OutlineInputBorder(),
                     ),
-                    items: snapshot.data!
-                        .map((s) => DropdownMenuItem(
-                      value: s.idStock!,
+                    value: selectedStockId,
+                    items: stocks.map((s) => DropdownMenuItem(
+                      value: s.idStock,
                       child: Text(s.libelleStock),
-                    ))
-                        .toList(),
-                    onChanged: (value) => selectedStockId = value,
+                    )).toList(),
+                    onChanged: (value) {
+                      selectedStockId = value;
+                    },
                   );
                 },
               ),
@@ -146,17 +161,19 @@ class _ProduitsPageState extends State<ProduitsPage> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Annuler")),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("Annuler"),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0074D9)),
             onPressed: () async {
               final code = codeCtrl.text.trim();
               final libelle = libelleCtrl.text.trim();
               final prix = double.tryParse(prixCtrl.text) ?? 0.0;
+              final qteInitiale = int.tryParse(qteInitialeCtrl.text) ?? 0;
 
               if (code.isEmpty || libelle.isEmpty) {
-                _showSnackBar("Code et libellé sont obligatoires", isError: true);
+                _showSnackBar("Code et libellé obligatoires", isError: true);
                 return;
               }
 
@@ -165,32 +182,28 @@ class _ProduitsPageState extends State<ProduitsPage> {
                 codeProduit: code,
                 libelleProduit: libelle,
                 prix: prix,
-                dateCreation: produit?.dateCreation,
-                dateDerniereModification: produit?.dateDerniereModification,
+                idStock: selectedStockId,
               );
 
               try {
-                Produit result;
-                if (isEdit) {
-                  await service.updateProduit(newProduit);
-                  result = produit!;
-                  _showSnackBar("Produit modifié avec succès !");
-                } else {
-                  result = await service.addProduit(newProduit);
-                  _showSnackBar("Produit ajouté avec succès !");
+                final saved = isEdit
+                    ? await service.updateProduit(newProduit)
+                    : await service.addProduit(newProduit);
+
+                if (selectedStockId != null && selectedStockId != produit?.idStock) {
+                  await service.assignProduitToStock(saved.idProduit!, selectedStockId!, qteInitiale);
                 }
 
-                if (selectedStockId != null) {
-                  await service.assignProduitToStock(result.idProduit!, selectedStockId!);
-                }
-
+                _showSnackBar(isEdit ? "Produit modifié !" : "Produit ajouté !");
+                setState(() {
+                  produits = _loadProduitsAvecQuantite();
+                });
                 Navigator.of(context).pop();
-                _loadProduitsAvecQuantite();
               } catch (e) {
-                _showSnackBar("Erreur lors de l'opération", isError: true);
+                _showSnackBar("Erreur : $e", isError: true);
               }
             },
-            child: Text(isEdit ? "Modifier" : "Ajouter", style: const TextStyle(color: Colors.white)),
+            child: const Text("Valider", style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

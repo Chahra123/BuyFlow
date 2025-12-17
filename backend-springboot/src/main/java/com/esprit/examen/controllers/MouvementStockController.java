@@ -18,7 +18,7 @@ public class MouvementStockController {
 
     @PostMapping
     public ResponseEntity<MouvementStock> creerMouvement(@RequestBody MouvementRequest req) {
-        MouvementStock m = mouvementStockService.effectuerMouvement(req.getProduitId(), req.getQuantite(), req.getType());
+        MouvementStock m = mouvementStockService.effectuerMouvement(req.getProduitId(), req.getQuantite(), req.getType(), req.getRaison(), req.getUtilisateur());
         return ResponseEntity.ok(m);
     }
 }

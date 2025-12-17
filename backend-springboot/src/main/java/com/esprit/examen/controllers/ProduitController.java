@@ -1,6 +1,7 @@
 package com.esprit.examen.controllers;
 
 import com.esprit.examen.dto.ProduitDTO;
+import com.esprit.examen.entities.MouvementStock;
 import com.esprit.examen.entities.Produit;
 import com.esprit.examen.services.IProduitService;
 import lombok.RequiredArgsConstructor;
@@ -101,4 +102,13 @@ public class ProduitController {
         return produitService.getQuantiteProduit(id);
     }
 
+    @PutMapping(value = "/assignProduitToStock/{idProduit}/{idStock}/{qteInitiale}")
+    public void assignProduitToStock(@PathVariable Long idProduit, @PathVariable Long idStock, @PathVariable Integer qteInitiale) {
+        produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
+    }
+
+    @GetMapping("/produit/{id}/mouvements")
+    public List<MouvementStock> getMouvementsProduit(@PathVariable Long id) {
+        return produitService.getMouvementsProduit(id);
+    }
 }

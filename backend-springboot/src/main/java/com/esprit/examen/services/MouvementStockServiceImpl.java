@@ -19,32 +19,28 @@ public class MouvementStockServiceImpl implements IMouvementStockService {
     @Autowired
     private ProduitRepository produitRepository;
 
-    public MouvementStock effectuerMouvement(Long produitId, int quantite, TypeMouvement type) {
-
+    @Override
+    public MouvementStock effectuerMouvement(Long produitId, Integer quantite, TypeMouvement type, String raison, String utilisateur) {
         Produit produit = produitRepository.findById(produitId).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
-
         if (produit.getStock() == null) {
             throw new RuntimeException("Produit non assigné à un stock");
         }
-
-        // Vérification stock AVANT sortie
         if (type == TypeMouvement.SORTIE) {
             int qteDisponible = calculerQuantiteProduit(produit);
             if (qteDisponible < quantite) {
-                throw new RuntimeException("Stock insuffisant");
+                throw new RuntimeException("Quantité insuffisante");
             }
         }
-
         MouvementStock mouvement = new MouvementStock();
         mouvement.setProduit(produit);
         mouvement.setQuantite(quantite);
         mouvement.setType(type);
-
+        mouvement.setRaison(raison);
+        mouvement.setUtilisateur(utilisateur);
         return mouvementStockRepository.save(mouvement);
     }
 
     public int calculerQuantiteProduit(Produit produit) {
         return produit.getMouvements().stream().mapToInt(m -> m.getType() == TypeMouvement.ENTREE ? m.getQuantite() : -m.getQuantite()).sum();
     }
-
 }

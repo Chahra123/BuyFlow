@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Entity
 @Getter
 @Setter
@@ -28,6 +29,10 @@ public class MouvementStock implements Serializable {
     private TypeMouvement type;
 
     private LocalDate dateMouvement;
+
+    private String raison;
+
+    private String utilisateur;
 
     @PrePersist
     private void onCreate() {
