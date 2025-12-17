@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MouvementStockServiceImpl implements IMouvementStockService{
+public class MouvementStockServiceImpl implements IMouvementStockService {
 
     @Autowired
     private MouvementStockRepository mouvementStockRepository;
@@ -19,34 +19,32 @@ public class MouvementStockServiceImpl implements IMouvementStockService{
     @Autowired
     private ProduitRepository produitRepository;
 
-    @Autowired
-    private StockRepository stockRepository;
-
     public MouvementStock effectuerMouvement(Long produitId, int quantite, TypeMouvement type) {
-        Produit produit = produitRepository.findById(produitId)
-                .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
 
-        Stock stock = produit.getStock();
-        if (stock == null) {
+        Produit produit = produitRepository.findById(produitId).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+
+        if (produit.getStock() == null) {
             throw new RuntimeException("Produit non assigné à un stock");
         }
 
-        if (type == TypeMouvement.SORTIE && stock.getQte() < quantite) {
-            throw new RuntimeException("Stock insuffisant");
+        // Vérification stock AVANT sortie
+        if (type == TypeMouvement.SORTIE) {
+            int qteDisponible = calculerQuantiteProduit(produit);
+            if (qteDisponible < quantite) {
+                throw new RuntimeException("Stock insuffisant");
+            }
         }
 
-        // Mise à jour stock
-        int nouvelleQte = type == TypeMouvement.ENTREE ?
-                stock.getQte() + quantite :
-                stock.getQte() - quantite;
-        stock.setQte(nouvelleQte);
-        stockRepository.save(stock);
-
-        // Enregistrement mouvement
         MouvementStock mouvement = new MouvementStock();
         mouvement.setProduit(produit);
         mouvement.setQuantite(quantite);
         mouvement.setType(type);
+
         return mouvementStockRepository.save(mouvement);
     }
+
+    public int calculerQuantiteProduit(Produit produit) {
+        return produit.getMouvements().stream().mapToInt(m -> m.getType() == TypeMouvement.ENTREE ? m.getQuantite() : -m.getQuantite()).sum();
+    }
+
 }

@@ -40,10 +40,7 @@ public class ProduitController {
 
     @GetMapping("/prdouits")
     public List<ProduitDTO> getProduits() {
-        return produitService.retrieveAllProduits()
-                .stream()
-                .map(produitService::toDTO)
-                .collect(Collectors.toList());
+        return produitService.retrieveAllProduits().stream().map(produitService::toDTO).collect(Collectors.toList());
     }
 
 
@@ -97,6 +94,11 @@ public class ProduitController {
     @PutMapping("/removeProduitFromStock/{idProduit}")
     public void removeProduitFromStock(@PathVariable Long idProduit) {
         produitService.removeProduitFromStock(idProduit);
+    }
+
+    @GetMapping("/produits/{id}/quantite")
+    public Integer getQuantiteProduit(@PathVariable Long id) {
+        return produitService.getQuantiteProduit(id);
     }
 
 }

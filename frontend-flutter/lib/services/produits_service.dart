@@ -107,4 +107,17 @@ class ProduitService {
       throw Exception("Erreur lors du mouvement de stock");
     }
   }
+
+  Future<int> getQuantiteProduit(int produitId) async {
+    final response = await http.get(
+      Uri.parse("$baseUrl/produits/$produitId/quantite"),
+    );
+
+    if (response.statusCode == 200) {
+      return int.parse(response.body);
+    } else {
+      throw Exception("Erreur lors du chargement de la quantité du produit");
+    }
+  }
+
 }

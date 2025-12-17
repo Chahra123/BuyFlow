@@ -40,6 +40,10 @@ public class Produit implements Serializable {
 	@JsonIgnore
 	private CategorieProduit categorieProduit;
 
+	@OneToMany(mappedBy = "produit")
+	@JsonIgnore
+	private Set<MouvementStock> mouvements;
+
 
 	@PrePersist
 	private void onCreate() {

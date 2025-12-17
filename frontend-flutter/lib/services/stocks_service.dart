@@ -19,6 +19,7 @@ class StockService {
 
   Future<Stock> getStockById(int id) async {
     final response = await http.get(Uri.parse("$baseUrl/$id"));
+    
 
     if (response.statusCode == 200) {
       return Stock.fromJson(json.decode(response.body));

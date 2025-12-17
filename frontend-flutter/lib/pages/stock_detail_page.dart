@@ -18,13 +18,12 @@ class _StockDetailPageState extends State<StockDetailPage> {
   @override
   void initState() {
     super.initState();
-    produitsDansStock = produitService.getProduitsByStock(widget.stock.idStock!);
+    produitsDansStock =
+        produitService.getProduitsByStock(widget.stock.idStock!);
   }
 
   @override
   Widget build(BuildContext context) {
-    final bool isLowStock = widget.stock.qte <= widget.stock.qteMin;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Détail du stock"),
@@ -40,29 +39,28 @@ class _StockDetailPageState extends State<StockDetailPage> {
             constraints: const BoxConstraints(maxWidth: 600),
             child: SingleChildScrollView(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ====== CARD STOCK ======
                   Card(
                     margin: const EdgeInsets.all(20),
                     elevation: 8,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
                       child: Column(
-                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Icône + statut
-                          CircleAvatar(
+                          const CircleAvatar(
                             radius: 40,
-                            backgroundColor: isLowStock ? Colors.red : Colors.blue,
+                            backgroundColor: Colors.blue,
                             child: Icon(
-                              isLowStock ? Icons.warning : Icons.inventory,
+                              Icons.inventory,
                               size: 40,
                               color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 20),
-
-                          // Libellé
                           Text(
                             widget.stock.libelleStock,
                             style: const TextStyle(
@@ -73,36 +71,15 @@ class _StockDetailPageState extends State<StockDetailPage> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 30),
-
-                          // Infos en cartes
-                          _buildInfoRow("ID Stock", "${widget.stock.idStock ?? '-'}", Icons.tag),
+                          _buildInfoRow(
+                              "ID Stock",
+                              widget.stock.idStock?.toString() ?? "-",
+                              Icons.tag),
                           const SizedBox(height: 16),
-                          _buildInfoRow("Quantité actuelle", "${widget.stock.qte}", Icons.inventory_2),
-                          const SizedBox(height: 16),
-                          _buildInfoRow("Quantité minimum", "${widget.stock.qteMin}", Icons.warning_amber),
-                          const SizedBox(height: 24),
-
-                          // Alerte stock faible
-                          if (isLowStock)
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.red.shade200),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.warning, color: Colors.red),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    "Stock faible – Réapprovisionnement requis",
-                                    style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          _buildInfoRow(
+                              "Quantité minimum",
+                              widget.stock.qteMin.toString(),
+                              Icons.warning_amber),
                         ],
                       ),
                     ),
@@ -110,54 +87,109 @@ class _StockDetailPageState extends State<StockDetailPage> {
 
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text("Produits liés", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      "Produits liés",
+                      style:
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   const SizedBox(height: 8),
 
+                  // ====== LISTE PRODUITS ======
                   FutureBuilder<List<Produit>>(
                     future: produitsDansStock,
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Center(
+                            child: CircularProgressIndicator());
                       }
                       if (snapshot.hasError) {
-                        return Center(child: Text("Erreur: ${snapshot.error}"));
+                        return Center(
+                            child: Text("Erreur : ${snapshot.error}"));
                       }
                       if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Center(child: Text("Aucun produit lié"));
+                        return const Center(
+                            child: Text("Aucun produit lié"));
                       }
+
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, i) {
                           final p = snapshot.data![i];
-                          return ListTile(
-                            leading: const Icon(Icons.shopping_bag),
-                            title: Text(p.libelleProduit),
-                            subtitle: Text("Code: ${p.codeProduit} | Prix: ${p.prix}"),
-                            trailing: PopupMenuButton(
-                              itemBuilder: (_) => [
-                                const PopupMenuItem(
-                                  value: "remove",
-                                  child: Text("Désassigner", style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
+
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 6),
+                            child: ListTile(
+                              leading: const Icon(Icons.shopping_bag),
+                              title: Text(
+                                p.libelleProduit,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Code : ${p.codeProduit}"),
+                                  FutureBuilder<int>(
+                                    future: produitService.getQuantiteProduit(p.idProduit!),
+                                    builder: (context, qteSnapshot) {
+                                      if (!qteSnapshot.hasData) {
+                                        return const Text("Quantité : ...");
+                                      }
+
+                                      final qte = qteSnapshot.data!;
+                                      final bool isLow =
+                                          qte <= widget.stock.qteMin;
+
+                                      return Text(
+                                        "Quantité : $qte",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: qte == 0
+                                              ? Colors.red
+                                              : isLow
+                                              ? Colors.orange
+                                              : Colors.green,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                              trailing: PopupMenuButton(
+                                itemBuilder: (_) => const [
+                                  PopupMenuItem(
+                                    value: "remove",
+                                    child: Text(
+                                      "Désassigner",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                ],
                                 onSelected: (value) async {
                                   if (value == "remove") {
                                     try {
-                                      await produitService.removeProduitFromStock(p.idProduit!);
+                                      await produitService
+                                          .removeProduitFromStock(
+                                          p.idProduit!);
                                       _refreshProduits();
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text("Produit désassigné")),
-                                      );
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(const SnackBar(
+                                          content: Text(
+                                              "Produit désassigné")));
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text("Erreur : $e")),
-                                      );
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                          content:
+                                          Text("Erreur : $e")));
                                     }
                                   }
                                 },
+                              ),
                             ),
                           );
                         },
@@ -182,9 +214,12 @@ class _StockDetailPageState extends State<StockDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+              Text(label,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14)),
               const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+              Text(value,
+                  style: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.w600)),
             ],
           ),
         ),
@@ -194,7 +229,8 @@ class _StockDetailPageState extends State<StockDetailPage> {
 
   void _refreshProduits() {
     setState(() {
-      produitsDansStock = produitService.getProduitsByStock(widget.stock.idStock!);
+      produitsDansStock =
+          produitService.getProduitsByStock(widget.stock.idStock!);
     });
   }
 }

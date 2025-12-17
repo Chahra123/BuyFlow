@@ -21,7 +21,9 @@ public interface IProduitService {
 
 	List<Produit> getProduitsByStock(Long idStock);
 
-	public ProduitDTO toDTO(Produit p);
+	ProduitDTO toDTO(Produit p);
 
 	void removeProduitFromStock(Long idProduit);
+
+	Integer getQuantiteProduit(Long produitId);
 }
