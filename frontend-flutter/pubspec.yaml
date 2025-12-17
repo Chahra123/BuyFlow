@@ -25,4 +25,7 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+  assets:
+    - lib/assets/logo-buyflow-design.png
+    - lib/assets/logo-buyflow.png
 
