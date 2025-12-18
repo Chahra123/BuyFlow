@@ -19,7 +19,7 @@ public class MouvementStockServiceImpl implements IMouvementStockService {
     @Autowired
     private ProduitRepository produitRepository;
 
-    @Override
+@Override
     public MouvementStock effectuerMouvement(Long produitId, Integer quantite, TypeMouvement type, String raison, String utilisateur) {
         Produit produit = produitRepository.findById(produitId).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
         if (produit.getStock() == null) {
