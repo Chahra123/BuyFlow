@@ -109,7 +109,7 @@ cd backend-springboot
 The backend API will be available at:
 
 ```
-http://localhost:8080
+http://localhost:9091
 ```
 
 ---
