@@ -50,13 +50,24 @@ public class ProduitController {
         return produitService.getProduitsByStock(idStock);
     }
 
-    /*
-     * Si le responsable magasin souhaite modifier le stock du produit il peut
-     * le faire en l'affectant au stock en question
-     */
     @PutMapping(value = "/assignProduitToStock/{idProduit}/{idStock}")
-    public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock) {
-        produitService.assignProduitToStock(idProduit, idStock);
+    public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock, @RequestParam(required = false, defaultValue = "0") Integer qteInitiale) {
+        produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
+    }
+
+    @PutMapping("/removeProduitFromStock/{idProduit}")
+    public void removeProduitFromStock(@PathVariable Long idProduit) {
+        produitService.removeProduitFromStock(idProduit);
+    }
+
+    @GetMapping("/{id}/quantite")
+    public Integer getQuantiteProduit(@PathVariable Long id) {
+        return produitService.getQuantiteProduit(id);
+    }
+
+    @GetMapping("/{id}/mouvements")
+    public List<MouvementStock> getMouvementsProduit(@PathVariable Long id) {
+        return produitService.getMouvementsProduit(id);
     }
 
     /*
@@ -71,8 +82,6 @@ public class ProduitController {
 
 		return produitService.getRevenuBrutProduit(idProduit, startDate, endDate);
 	}*/
-
-
 
 
     /*
@@ -91,24 +100,4 @@ public class ProduitController {
 //		stockService.retrieveStatusStock();
 //	}
 
-
-    @PutMapping("/removeProduitFromStock/{idProduit}")
-    public void removeProduitFromStock(@PathVariable Long idProduit) {
-        produitService.removeProduitFromStock(idProduit);
-    }
-
-    @GetMapping("/{id}/quantite")
-    public Integer getQuantiteProduit(@PathVariable Long id) {
-        return produitService.getQuantiteProduit(id);
-    }
-
-    @PutMapping(value = "/assignProduitToStock/{idProduit}/{idStock}/{qteInitiale}")
-    public void assignProduitToStock(@PathVariable Long idProduit, @PathVariable Long idStock, @PathVariable Integer qteInitiale) {
-        produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
-    }
-
-    @GetMapping("/{id}/mouvements")
-    public List<MouvementStock> getMouvementsProduit(@PathVariable Long id) {
-        return produitService.getMouvementsProduit(id);
-    }
 }

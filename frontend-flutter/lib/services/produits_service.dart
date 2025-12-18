@@ -57,7 +57,7 @@ class ProduitService {
   ) async {
     final response = await http.put(
       Uri.parse(
-        "$baseUrl/assignProduitToStock/$idProduit/$idStock/$qteInitiale",
+        "$baseUrl/assignProduitToStock/$idProduit/$idStock?qteInitiale=$qteInitiale",
       ),
     );
     if (response.statusCode != 200) {
