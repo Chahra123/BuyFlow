@@ -182,6 +182,8 @@ flutter run
 * POST `/stocks` - Add stock
 * PUT `/stocks` - Update stock
 * DELETE `/stocks/{id}` - Delete stock
+* An operator can assign/unassign a product to/from a stock.
+* Once a product is assigned to a stock, we can create stock movements (purchases coming in and out).
 * You can see a short demonstration of the stock management feature below:
 <img src="utils/demo_stock.gif?raw=true" alt="Demo GIF" width="300"/> 
 
