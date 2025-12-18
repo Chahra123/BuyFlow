@@ -1,6 +1,7 @@
 package com.esprit.examen.controllers;
 
 import com.esprit.examen.dto.ProduitDTO;
+import com.esprit.examen.entities.MouvementStock;
 import com.esprit.examen.entities.Produit;
 import com.esprit.examen.services.IProduitService;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-//@RequestMapping("/produits")
+@RequestMapping("/produits")
 @CrossOrigin("*")
 @RequiredArgsConstructor
 public class ProduitController {
@@ -23,22 +24,22 @@ public class ProduitController {
         return produitService.addProduit(p);
     }
 
-    @DeleteMapping("/produit/{produit-id}")
+    @DeleteMapping("/{produit-id}")
     public void removeProduit(@PathVariable("produit-id") Long produitId) {
         produitService.deleteProduit(produitId);
     }
 
-    @PutMapping("/produits")
+    @PutMapping
     public Produit modifyProduit(@RequestBody Produit p) {
         return produitService.updateProduit(p);
     }
 
-    @GetMapping("/produit/{produit-id}")
+    @GetMapping("/{produit-id}")
     public Produit retrieveRayon(@PathVariable("produit-id") Long produitId) {
         return produitService.retrieveProduit(produitId);
     }
 
-    @GetMapping("/prdouits")
+    @GetMapping
     public List<ProduitDTO> getProduits() {
         return produitService.retrieveAllProduits().stream().map(produitService::toDTO).collect(Collectors.toList());
     }
@@ -49,13 +50,24 @@ public class ProduitController {
         return produitService.getProduitsByStock(idStock);
     }
 
-    /*
-     * Si le responsable magasin souhaite modifier le stock du produit il peut
-     * le faire en l'affectant au stock en question
-     */
     @PutMapping(value = "/assignProduitToStock/{idProduit}/{idStock}")
-    public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock) {
-        produitService.assignProduitToStock(idProduit, idStock);
+    public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock, @RequestParam(required = false, defaultValue = "0") Integer qteInitiale) {
+        produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
+    }
+
+    @PutMapping("/removeProduitFromStock/{idProduit}")
+    public void removeProduitFromStock(@PathVariable Long idProduit) {
+        produitService.removeProduitFromStock(idProduit);
+    }
+
+    @GetMapping("/{id}/quantite")
+    public Integer getQuantiteProduit(@PathVariable Long id) {
+        return produitService.getQuantiteProduit(id);
+    }
+
+    @GetMapping("/{id}/mouvements")
+    public List<MouvementStock> getMouvementsProduit(@PathVariable Long id) {
+        return produitService.getMouvementsProduit(id);
     }
 
     /*
@@ -70,8 +82,6 @@ public class ProduitController {
 
 		return produitService.getRevenuBrutProduit(idProduit, startDate, endDate);
 	}*/
-
-
 
 
     /*
@@ -89,16 +99,5 @@ public class ProduitController {
 //	public void retrieveStatusStock() {
 //		stockService.retrieveStatusStock();
 //	}
-
-
-    @PutMapping("/removeProduitFromStock/{idProduit}")
-    public void removeProduitFromStock(@PathVariable Long idProduit) {
-        produitService.removeProduitFromStock(idProduit);
-    }
-
-    @GetMapping("/produits/{id}/quantite")
-    public Integer getQuantiteProduit(@PathVariable Long id) {
-        return produitService.getQuantiteProduit(id);
-    }
 
 }

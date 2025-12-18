@@ -1,5 +1,6 @@
 package com.esprit.examen.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.transaction.Transactional;
 
@@ -29,6 +30,9 @@ public class ProduitServiceImpl implements IProduitService {
 
     @Autowired
     StockServiceImpl stockService;
+
+    @Autowired
+    MouvementStockServiceImpl mouvementStockService;
 
     @Override
     public List<Produit> retrieveAllProduits() {
@@ -108,6 +112,24 @@ public class ProduitServiceImpl implements IProduitService {
     @Override
     public Integer getQuantiteProduit(Long produitId) {
         return mouvementStockRepository.calculerQuantiteProduit(produitId);
+    }
+
+  @Override
+    public void assignProduitToStock(Long idProduit, Long idStock, Integer qteInitiale) {
+        Produit p = retrieveProduit(idProduit);
+        Stock s = stockService.retrieveStock(idStock);
+        p.setQteMin(s.getQteMin());
+        p.setStock(s);
+        updateProduit(p);
+        if (qteInitiale > 0) {
+            mouvementStockService.effectuerMouvement(idProduit, qteInitiale, TypeMouvement.ENTREE, "Assignation initiale", "admin");
+        }
+    }
+
+    @Override
+    public List<MouvementStock> getMouvementsProduit(Long idProduit) {
+        Produit p = retrieveProduit(idProduit);
+        return new ArrayList<>(p.getMouvements());
     }
 
 }

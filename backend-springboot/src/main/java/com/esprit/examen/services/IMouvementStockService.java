@@ -5,5 +5,5 @@ import com.esprit.examen.entities.TypeMouvement;
 
 public interface IMouvementStockService {
 
-    public MouvementStock effectuerMouvement(Long produitId, int quantite, TypeMouvement type);
+    public MouvementStock effectuerMouvement(Long produitId, Integer quantite, TypeMouvement type, String raison, String utilisateur);
 }
