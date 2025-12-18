@@ -5,10 +5,10 @@ import '../models/MouvementStock.dart';
 import '../models/produit.dart';
 
 class ProduitService {
-  final String baseUrl = "http://192.168.1.14:9091";
+  final String baseUrl = "http://192.168.1.14:9091/produits";
 
   Future<List<Produit>> getProduits() async {
-    final response = await http.get(Uri.parse("$baseUrl/prdouits"));
+    final response = await http.get(Uri.parse(baseUrl));
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => Produit.fromJson(json)).toList();
@@ -19,7 +19,7 @@ class ProduitService {
 
   Future<Produit> addProduit(Produit produit) async {
     final response = await http.post(
-      Uri.parse("$baseUrl/"),
+      Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
       body: json.encode(produit.toJson()),
     );
@@ -32,7 +32,7 @@ class ProduitService {
 
   Future<Produit> updateProduit(Produit produit) async {
     final response = await http.put(
-      Uri.parse("$baseUrl/produits"),
+      Uri.parse(baseUrl),
       headers: {"Content-Type": "application/json"},
       body: json.encode(produit.toJson()),
     );
@@ -44,7 +44,7 @@ class ProduitService {
   }
 
   Future<void> deleteProduit(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl/produit/$id"));
+    final response = await http.delete(Uri.parse("$baseUrl/$id"));
     if (response.statusCode != 200) {
       throw Exception("Erreur lors de la suppression du produit");
     }
@@ -91,7 +91,7 @@ class ProduitService {
     required int quantite,
     required String type, // "ENTREE" ou "SORTIE"
     String? raison,
-    String? utilisateur
+    String? utilisateur,
   }) async {
     if (type == "SORTIE") {
       int qteDisponible = await getQuantiteProduit(produitId);
@@ -118,7 +118,9 @@ class ProduitService {
   }
 
   Future<List<MouvementStock>> getMouvementsProduit(int produitId) async {
-    final response = await http.get(Uri.parse("$baseUrl/produit/$produitId/mouvements"));
+    final response = await http.get(
+      Uri.parse("$baseUrl/$produitId/mouvements"),
+    );
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
       return data.map((json) => MouvementStock.fromJson(json)).toList();
@@ -128,9 +130,7 @@ class ProduitService {
   }
 
   Future<int> getQuantiteProduit(int produitId) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/produits/$produitId/quantite"),
-    );
+    final response = await http.get(Uri.parse("$baseUrl/$produitId/quantite"));
     if (response.statusCode == 200) {
       return int.parse(response.body);
     } else {

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-//@RequestMapping("/produits")
+@RequestMapping("/produits")
 @CrossOrigin("*")
 @RequiredArgsConstructor
 public class ProduitController {
@@ -24,22 +24,22 @@ public class ProduitController {
         return produitService.addProduit(p);
     }
 
-    @DeleteMapping("/produit/{produit-id}")
+    @DeleteMapping("/{produit-id}")
     public void removeProduit(@PathVariable("produit-id") Long produitId) {
         produitService.deleteProduit(produitId);
     }
 
-    @PutMapping("/produits")
+    @PutMapping
     public Produit modifyProduit(@RequestBody Produit p) {
         return produitService.updateProduit(p);
     }
 
-    @GetMapping("/produit/{produit-id}")
+    @GetMapping("/{produit-id}")
     public Produit retrieveRayon(@PathVariable("produit-id") Long produitId) {
         return produitService.retrieveProduit(produitId);
     }
 
-    @GetMapping("/prdouits")
+    @GetMapping
     public List<ProduitDTO> getProduits() {
         return produitService.retrieveAllProduits().stream().map(produitService::toDTO).collect(Collectors.toList());
     }
@@ -97,7 +97,7 @@ public class ProduitController {
         produitService.removeProduitFromStock(idProduit);
     }
 
-    @GetMapping("/produits/{id}/quantite")
+    @GetMapping("/{id}/quantite")
     public Integer getQuantiteProduit(@PathVariable Long id) {
         return produitService.getQuantiteProduit(id);
     }
@@ -107,7 +107,7 @@ public class ProduitController {
         produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
     }
 
-    @GetMapping("/produit/{id}/mouvements")
+    @GetMapping("/{id}/mouvements")
     public List<MouvementStock> getMouvementsProduit(@PathVariable Long id) {
         return produitService.getMouvementsProduit(id);
     }
