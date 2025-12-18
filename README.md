@@ -185,8 +185,8 @@ flutter run
 * You can see a short demonstration of the stock management feature below:
 ![Demo GIF](utils/demo_stock.gif)
 
-<img src="https://github.com/Chahra123/BuyFlow/blob/main/frontend-flutter/lib/assets/demo_stock.gif?raw=true" alt="Demo GIF" width="400"/>
 
+<img src="utils/demo_stock.gif?raw=true" alt="Demo GIF" width="400"/> 
 
 ---
 
