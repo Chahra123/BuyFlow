@@ -17,6 +17,7 @@ The application allows users to manage purchases through a mobile interface back
 * [Project Structure](#project-structure)
 * [Installation](#installation)
 * [Running the Project](#running-the-project)
+* [API Endpoints](#api-endpoints)
 * [Usage](#usage)
 * [Contributing](#contributing)
 * [License](#license)
@@ -25,31 +26,28 @@ The application allows users to manage purchases through a mobile interface back
 
 ## About
 
-BuyFlow is designed to simplify purchase management on mobile devices. It combines a Spring Boot backend responsible for business logic and data persistence with a Flutter mobile frontend that provides a responsive and cross-platform user experience.
+BuyFlow simplifies purchase management on mobile devices, combining a Spring Boot backend with a Flutter mobile frontend.
 
 ---
 
 ## Features
 
-> The exact feature set depends on the current implementation. Typical features include:
-
 * User authentication
-* Viewing and managing purchases
-* Create, update, and delete purchase records
-* Communication between Flutter app and REST API
+* Manage purchases, products, stocks, invoices, and suppliers
+* CRUD operations via REST API
 * Cross-platform mobile support (Android / iOS)
 
 ---
 
 ## Technologies
 
-| Layer                            | Technology                                |
-| -------------------------------- | ----------------------------------------- |
-| Backend                          | Spring Boot (Java)                        |
-| Frontend                         | Flutter (Dart)                            |
-| Dependency Management (Backend)  | Maven / Gradle                            |
-| Dependency Management (Frontend) | Dart / Pub                                |
-| Database                         | MySQL                                     |
+| Layer                            | Technology                                 |
+| -------------------------------- | ------------------------------------------ |
+| Backend                          | Spring Boot (Java)                         |
+| Frontend                         | Flutter (Dart)                             |
+| Dependency Management (Backend)  | Maven / Gradle                             |
+| Dependency Management (Frontend) | Dart / Pub                                 |
+| Database                         | MySQL                                      |
 
 ---
 
@@ -58,7 +56,7 @@ BuyFlow is designed to simplify purchase management on mobile devices. It combin
 ```
 BuyFlow/
 │── backend-springboot/    # Spring Boot API
-│── frontend-flutter/     # Flutter mobile application
+│── frontend-flutter/      # Flutter mobile application
 │── README.md
 │── LICENSE
 ```
@@ -69,13 +67,11 @@ BuyFlow/
 
 ### Prerequisites
 
-Make sure you have the following installed:
-
 * Git
-* Java JDK 17+ (or the version required by Spring Boot)
+* Java JDK 17+
 * Flutter SDK
-* An IDE or editor (IntelliJ IDEA, Android Studio, VS Code)
-* Android Emulator or physical mobile device
+* IDE (IntelliJ, Android Studio, VS Code)
+* Android Emulator or device
 
 ### Clone the Repository
 
@@ -90,80 +86,120 @@ cd BuyFlow
 
 ### Backend (Spring Boot)
 
-1. Navigate to the backend directory:
-
 ```bash
 cd backend-springboot
+./mvnw spring-boot:run
+# or ./gradlew bootRun
 ```
 
-2. Configure `application.properties` or `application.yml` if needed (database, ports, credentials).
+API available at `http://localhost:9091`.
 
-3. Start the application:
+### Frontend (Flutter)
 
 ```bash
-./mvnw spring-boot:run
-# or (Gradle)
-./gradlew bootRun
-```
-
-The backend API will be available at:
-
-```
-http://localhost:9091
+cd frontend-flutter
+flutter pub get
+flutter run
 ```
 
 ---
 
-### Frontend (Flutter)
+## API Endpoints
 
-1. Navigate to the Flutter project:
+### CategorieProduit
 
-```bash
-cd frontend-flutter
-```
+* GET `/categories` - Retrieve all categories
+* GET `/categories/{id}` - Retrieve a single category
+* POST `/categories` - Add a new category
+* PUT `/categorie-produit` - Update a category
+* DELETE `/categorieproduit/{id}` - Delete a category
 
-2. Install dependencies:
+### Facture
 
-```bash
-flutter pub get
-```
+* GET `/factures` - Retrieve all invoices
+* GET `/{facture-id}` - Retrieve a single invoice
+* POST `/factures` - Add a new invoice
+* PUT `/cancel/{facture-id}` - Cancel an invoice
+* GET `/byfournisseur/{fournisseur-id}` - Invoices by supplier
+* PUT `/assign-to-operateur/{idOperateur}/{idFacture}` - Assign operator to invoice
+* GET `/pourcentage-recouvrement/{startDate}/{endDate}` - Recovery percentage
 
-3. Run the application:
+### Fournisseur
 
-```bash
-flutter run
-```
+* GET `/fournisseurs` - Retrieve all suppliers
+* GET `/{fournisseur-id}` - Retrieve a single supplier
+* POST `/fournisseurs` - Add supplier
+* PUT `/fournisseurs` - Update supplier
+* DELETE `/fournisseur/{id}` - Delete supplier
+* PUT `/assignSecteurActiviteToFournisseur/{idSecteurActivite}/{idFournisseur}` - Assign sector to supplier
 
-The application will launch on the connected emulator or physical device.
+### MouvementStock
+
+* POST `/mouvements` - Create a stock movement
+
+### Operateur
+
+* GET `/operateurs` - Retrieve all operators
+* GET `/{operateur-id}` - Retrieve a single operator
+* POST `/operateurs` - Add operator
+* PUT `/operateurs` - Update operator
+* DELETE `/operateur/{id}` - Delete operator
+
+### Produit
+
+* GET `/produits` - Retrieve all products
+* GET `/produits/{id}` - Retrieve a product
+* GET `/produits/getProduitByStock/{idStock}` - Products by stock
+* GET `/produits/{id}/quantite` - Product quantity
+* GET `/produits/{id}/mouvements` - Product stock movements
+* POST `/produits` - Add product
+* PUT `/produits` - Update product
+* PUT `/produits/assignProduitToStock/{idProduit}/{idStock}` - Assign product to stock
+* PUT `/produits/removeProduitFromStock/{idProduit}` - Remove product from stock
+* DELETE `/produits/{id}` - Delete product
+
+### Reglement
+
+* GET `/getChiffreAffaireEntreDeuxDate/{startDate}/{endDate}` - Revenue between dates
+* GET `/retrieveReglementByFacture/{facture-id}` - Payments for an invoice
+* GET `/retrieve-reglement/{reglement-id}` - Retrieve payment
+* GET `/retrieve-all-reglements` - All payments
+* POST `/add-reglement` - Add payment
+
+### SecteurActivite
+
+* GET `/secteurs` - Retrieve all sectors
+* GET `/{secteurActivite-id}` - Retrieve a sector
+* POST `/secteurs` - Add sector
+* PUT `/secteur-activite` - Update sector
+* DELETE `/secteuractivite/{id}` - Delete sector
+
+### Stock
+
+* GET `/stocks` - Retrieve all stocks
+* GET `/stocks/{id}` - Retrieve a stock
+* GET `/stocks/{id}/qteTotale` - Total quantity in stock
+* POST `/stocks` - Add stock
+* PUT `/stocks` - Update stock
+* DELETE `/stocks/{id}` - Delete stock
 
 ---
 
 ## Usage
 
-Once the application is running:
-
-* Open the mobile app
-* Authenticate if required
-* Navigate through the purchase management screens
-* Perform CRUD operations on purchases
-
-You can enhance this section by adding screenshots or GIFs to illustrate the workflow.
+Use the mobile app to authenticate, view, and manage purchases, products, stocks, invoices, and suppliers. CRUD operations are performed via the API.
 
 ---
 
 ## Contributing
 
-Contributions are welcome.
-
-1. Fork the repository
-2. Create a feature branch (`feature/my-feature`)
-3. Commit your changes with clear messages
-4. Push the branch and open a Pull Request
-
-Please follow clean code practices and existing project conventions.
+1. Fork repository
+2. Create feature branch
+3. Commit changes
+4. Push and open a Pull Request
 
 ---
 
 ## License
 
-This project is licensed under the **CC0-1.0 (Public Domain)** license. See the `LICENSE` file for details.
+Licensed under **CC0-1.0 (Public Domain)**.
