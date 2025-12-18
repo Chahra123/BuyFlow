@@ -114,7 +114,7 @@ public class ProduitServiceImpl implements IProduitService {
         return mouvementStockRepository.calculerQuantiteProduit(produitId);
     }
 
-    @Override
+  @Override
     public void assignProduitToStock(Long idProduit, Long idStock, Integer qteInitiale) {
         Produit p = retrieveProduit(idProduit);
         Stock s = stockService.retrieveStock(idStock);
