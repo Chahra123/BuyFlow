@@ -1,52 +1,51 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
+import 'package:dio/dio.dart';
 import '../models/MouvementStock.dart';
 import '../models/produit.dart';
+import '../core/di/service_locator.dart';
+import '../core/network/dio_client.dart';
 
 class ProduitService {
-  final String baseUrl = "http://192.168.1.14:9091";
+  Dio get _dio => sl<DioClient>().dio;
 
   Future<List<Produit>> getProduits() async {
-    final response = await http.get(Uri.parse("$baseUrl/produits"));
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+    try {
+      final response = await _dio.get('/produits');
+      final List<dynamic> data = response.data;
       return data.map((json) => Produit.fromJson(json)).toList();
-    } else {
-      throw Exception("Erreur lors de la récupération des produits");
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération des produits: $e");
     }
   }
 
   Future<Produit> addProduit(Produit produit) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/produits"),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(produit.toJson()),
-    );
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return Produit.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors de l'ajout du produit");
+    try {
+      final response = await _dio.post(
+        '/produits',
+        data: produit.toJson(),
+      );
+      return Produit.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors de l'ajout du produit: $e");
     }
   }
 
   Future<Produit> updateProduit(Produit produit) async {
-    final response = await http.put(
-      Uri.parse("$baseUrl/produits"),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(produit.toJson()),
-    );
-    if (response.statusCode == 200) {
-      return Produit.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors de la modification du produit");
+    try {
+      final response = await _dio.put(
+        '/produits',
+        data: produit.toJson(),
+      );
+      return Produit.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors de la modification du produit: $e");
     }
   }
 
   Future<void> deleteProduit(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl/produits/$id"));
-    if (response.statusCode != 200) {
-      throw Exception("Erreur lors de la suppression du produit");
+    try {
+      await _dio.delete('/produits/$id');
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression du produit: $e");
     }
   }
 
@@ -55,34 +54,35 @@ class ProduitService {
     int idStock,
     int qteInitiale,
   ) async {
-    final response = await http.put(
-      Uri.parse(
-        "$baseUrl/produits/assignProduitToStock/$idProduit/$idStock?qteInitiale=$qteInitiale",
-      ),
-    );
-    if (response.statusCode != 200) {
-      throw Exception("Erreur lors de l'assignation au stock");
+    try {
+      await _dio.put(
+        '/produits/assignProduitToStock/$idProduit/$idStock',
+        queryParameters: {'qteInitiale': qteInitiale},
+      );
+    } catch (e) {
+      throw Exception("Erreur lors de l'assignation au stock: $e");
     }
   }
 
   Future<List<Produit>> getProduitsByStock(int idStock) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/produits/getProduitByStock/$idStock"),
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonList = json.decode(response.body);
+    try {
+      final response = await _dio.get(
+        '/produits/getProduitByStock/$idStock',
+      );
+      final List<dynamic> jsonList = response.data;
       return jsonList.map((json) => Produit.fromJson(json)).toList();
-    } else {
-      throw Exception("Erreur lors du chargement des produits par stock");
+    } catch (e) {
+      throw Exception("Erreur lors du chargement des produits par stock: $e");
     }
   }
 
   Future<void> removeProduitFromStock(int idProduit) async {
-    final response = await http.put(
-      Uri.parse("$baseUrl/produits/removeProduitFromStock/$idProduit"),
-    );
-    if (response.statusCode != 200) {
-      throw Exception("Erreur désassignation");
+    try {
+      await _dio.put(
+        '/produits/removeProduitFromStock/$idProduit',
+      );
+    } catch (e) {
+      throw Exception("Erreur désassignation: $e");
     }
   }
 
@@ -99,44 +99,43 @@ class ProduitService {
         throw Exception("Quantité insuffisante");
       }
     }
-    final response = await http.post(
-      Uri.parse("$baseUrl/mouvements"),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode({
-        "produitId": produitId,
-        "quantite": quantite,
-        "type": type,
-        "raison": raison,
-        "utilisateur": utilisateur,
-      }),
-    );
-    if (response.statusCode == 200) {
-      return MouvementStock.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors du mouvement de stock");
+    try {
+      final response = await _dio.post(
+        '/mouvements',
+        data: {
+          "produitId": produitId,
+          "quantite": quantite,
+          "type": type,
+          "raison": raison,
+          "utilisateur": utilisateur,
+        },
+      );
+      return MouvementStock.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors du mouvement de stock: $e");
     }
   }
 
   Future<List<MouvementStock>> getMouvementsProduit(int produitId) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/produits/$produitId/mouvements"),
-    );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+    try {
+      final response = await _dio.get(
+        '/produits/$produitId/mouvements',
+      );
+      final List<dynamic> data = response.data;
       return data.map((json) => MouvementStock.fromJson(json)).toList();
-    } else {
-      throw Exception("Erreur lors de la récupération des mouvements");
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération des mouvements: $e");
     }
   }
 
   Future<int> getQuantiteProduit(int produitId) async {
-    final response = await http.get(
-      Uri.parse("$baseUrl/produits/$produitId/quantite"),
-    );
-    if (response.statusCode == 200) {
-      return int.parse(response.body);
-    } else {
-      throw Exception("Erreur lors du chargement de la quantité du produit");
+    try {
+      final response = await _dio.get(
+        '/produits/$produitId/quantite',
+      );
+      return response.data is int ? response.data : int.parse(response.data.toString());
+    } catch (e) {
+      throw Exception("Erreur lors du chargement de la quantité du produit: $e");
     }
   }
 }

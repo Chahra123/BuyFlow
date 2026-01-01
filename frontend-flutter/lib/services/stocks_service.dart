@@ -1,74 +1,68 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
+import 'package:dio/dio.dart';
 import '../models/stock.dart';
+import '../core/di/service_locator.dart';
+import '../core/network/dio_client.dart';
 
 class StockService {
-  final String baseUrl = "http://192.168.1.14:9091/stocks";
+  Dio get _dio => sl<DioClient>().dio;
 
   Future<List<Stock>> getStocks() async {
-    final response = await http.get(Uri.parse(baseUrl));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+    try {
+      final response = await _dio.get('/stocks');
+      final List<dynamic> data = response.data;
       return data.map((json) => Stock.fromJson(json)).toList();
-    } else {
-      throw Exception("Erreur lors de la récupération des stocks");
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération des stocks: $e");
     }
   }
 
   Future<Stock> getStockById(int id) async {
-    final response = await http.get(Uri.parse("$baseUrl/$id"));
-
-    if (response.statusCode == 200) {
-      return Stock.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Stock introuvable");
+    try {
+      final response = await _dio.get('/stocks/$id');
+      return Stock.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Stock introuvable: $e");
     }
   }
 
   Future<Stock> addStock(Stock stock) async {
-    final response = await http.post(
-      Uri.parse(baseUrl),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(stock.toJson()),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return Stock.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors de l'ajout du stock");
+    try {
+      final response = await _dio.post(
+        '/stocks',
+        data: stock.toJson(),
+      );
+      return Stock.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors de l'ajout du stock: $e");
     }
   }
 
   Future<Stock> updateStock(Stock stock) async {
-    final response = await http.put(
-      Uri.parse(baseUrl),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(stock.toJson()),
-    );
-
-    if (response.statusCode == 200) {
-      return Stock.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors de la modification");
+    try {
+      final response = await _dio.put(
+        '/stocks',
+        data: stock.toJson(),
+      );
+      return Stock.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors de la modification: $e");
     }
   }
 
   Future<void> deleteStock(int id) async {
-    final response = await http.delete(Uri.parse("$baseUrl/$id"));
-
-    if (response.statusCode != 200) {
-      throw Exception("Erreur lors de la suppression");
+    try {
+      await _dio.delete('/stocks/$id');
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression: $e");
     }
   }
 
   Future<int> getQteTotale(int idStock) async {
-    final response = await http.get(Uri.parse("$baseUrl/$idStock/qteTotale"));
-    if (response.statusCode == 200) {
-      return int.parse(response.body);
-    } else {
-      throw Exception("Erreur lors de la récupération de qteTotale");
+    try {
+      final response = await _dio.get('/stocks/$idStock/qteTotale');
+      return response.data is int ? response.data : int.parse(response.data.toString());
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération de qteTotale: $e");
     }
   }
 }
