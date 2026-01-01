@@ -1,12 +1,12 @@
 package com.esprit.examen.controllers;
 
+import com.esprit.examen.dto.response.StockStatsResponse;
 import com.esprit.examen.entities.Stock;
 import com.esprit.examen.services.IStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/stocks")
@@ -44,5 +44,10 @@ public class StockController {
     @GetMapping("/{id}/qteTotale")
     public int getQteTotale(@PathVariable Long id) {
         return stockService.getQteTotale(id);
+    }
+
+    @GetMapping("/stats")
+    public StockStatsResponse getStockStats() {
+        return stockService.getStockStats();
     }
 }

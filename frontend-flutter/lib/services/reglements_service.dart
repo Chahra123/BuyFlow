@@ -1,43 +1,39 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
+import 'package:dio/dio.dart';
 import '../models/reglement.dart';
+import '../core/di/service_locator.dart';
+import '../core/network/dio_client.dart';
 
 class ReglementService {
-  final String baseUrl = "http://192.168.1.17:9091";
+  Dio get _dio => sl<DioClient>().dio;
 
   Future<List<Reglement>> getReglements() async {
-    final response = await http.get(Uri.parse("$baseUrl/retrieve-all-reglements"));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+    try {
+      final response = await _dio.get('/retrieve-all-reglements');
+      final List<dynamic> data = response.data;
       return data.map((e) => Reglement.fromJson(e)).toList();
-    } else {
-      throw Exception("Erreur lors de la récupération des règlements");
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération des règlements: $e");
     }
   }
 
   Future<Reglement> getReglementById(int id) async {
-    final response = await http.get(Uri.parse("$baseUrl/retrieve-reglement/$id"));
-
-    if (response.statusCode == 200) {
-      return Reglement.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Règlement introuvable");
+    try {
+      final response = await _dio.get('/retrieve-reglement/$id');
+      return Reglement.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Règlement introuvable: $e");
     }
   }
 
   Future<Reglement> addReglement(Reglement r) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/add-reglement"),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(r.toJson()),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return Reglement.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors de l'ajout du règlement");
+    try {
+      final response = await _dio.post(
+        '/add-reglement',
+        data: r.toJson(),
+      );
+      return Reglement.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors de l'ajout du règlement: $e");
     }
   }
 }

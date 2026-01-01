@@ -1,56 +1,50 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
+import 'package:dio/dio.dart';
 import '../models/categorie_produit.dart';
+import '../core/di/service_locator.dart';
+import '../core/network/dio_client.dart';
 
 class CategorieProduitService {
-  final String baseUrl = "http://192.168.1.17:9091";
+  Dio get _dio => sl<DioClient>().dio;
 
   Future<List<CategorieProduit>> getCategories() async {
-    final response = await http.get(Uri.parse("$baseUrl/categories"));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
+    try {
+      final response = await _dio.get('/categories');
+      final List<dynamic> data = response.data;
       return data.map((e) => CategorieProduit.fromJson(e)).toList();
-    } else {
-      throw Exception("Erreur lors de la récupération des catégories");
+    } catch (e) {
+      throw Exception("Erreur lors de la récupération des catégories: $e");
     }
   }
 
   Future<CategorieProduit> addCategorie(CategorieProduit categorie) async {
-    final response = await http.post(
-      Uri.parse("$baseUrl/categories"),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(categorie.toJson()),
-    );
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return CategorieProduit.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors de l'ajout de la catégorie");
+    try {
+      final response = await _dio.post(
+        '/categories',
+        data: categorie.toJson(),
+      );
+      return CategorieProduit.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors de l'ajout de la catégorie: $e");
     }
   }
 
   Future<CategorieProduit> updateCategorie(CategorieProduit categorie) async {
-    final response = await http.put(
-      Uri.parse("$baseUrl/categorie-produit"),
-      headers: {"Content-Type": "application/json"},
-      body: json.encode(categorie.toJson()),
-    );
-
-    if (response.statusCode == 200) {
-      return CategorieProduit.fromJson(json.decode(response.body));
-    } else {
-      throw Exception("Erreur lors de la modification de la catégorie");
+    try {
+      final response = await _dio.put(
+        '/categorie-produit',
+        data: categorie.toJson(),
+      );
+      return CategorieProduit.fromJson(response.data);
+    } catch (e) {
+      throw Exception("Erreur lors de la modification de la catégorie: $e");
     }
   }
 
   Future<void> deleteCategorie(int id) async {
-    final response =
-    await http.delete(Uri.parse("$baseUrl/categorieproduit/$id"));
-
-    if (response.statusCode != 200) {
-      throw Exception("Erreur lors de la suppression de la catégorie");
+    try {
+      await _dio.delete('/categorieproduit/$id');
+    } catch (e) {
+      throw Exception("Erreur lors de la suppression de la catégorie: $e");
     }
   }
 }
