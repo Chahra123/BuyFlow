@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/stocks_service.dart';
 import '../models/stock.dart';
 import '../pages/stock_detail_page.dart';
+import '../pages/stock_dashboard_screen.dart';
+import '../pages/stock_movement_page.dart';
 import '../core/theme/app_colors.dart';
 
 class StocksPage extends StatefulWidget {
@@ -124,11 +126,33 @@ class _StocksPageState extends State<StocksPage> {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: Text("Nouveau Stock", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
-        onPressed: () => _showStockDialog(),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: "movements",
+            backgroundColor: AppColors.accent,
+            icon: const Icon(Icons.history_rounded, color: Colors.white),
+            label: Text("Historique", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StockMovementPage())),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: "dashboard",
+            backgroundColor: AppColors.secondary,
+            icon: const Icon(Icons.analytics_rounded, color: Colors.white),
+            label: Text("Analytics", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StockDashboardScreen())),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton.extended(
+            heroTag: "newStock",
+            backgroundColor: AppColors.primary,
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: Text("Nouveau Stock", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+            onPressed: () => _showStockDialog(),
+          ),
+        ],
       ),
       body: FutureBuilder<List<Stock>>(
         future: stocks,

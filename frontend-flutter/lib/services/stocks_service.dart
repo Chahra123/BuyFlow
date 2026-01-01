@@ -65,4 +65,22 @@ class StockService {
       throw Exception("Erreur lors de la récupération de qteTotale: $e");
     }
   }
+
+  Future<Map<String, dynamic>> getStockStats() async {
+    try {
+      final response = await _dio.get('/stocks/stats');
+      return response.data;
+    } catch (e) {
+      throw Exception("Erreur stats stock: $e");
+    }
+  }
+
+  Future<List<dynamic>> getMouvements() async {
+    try {
+      final response = await _dio.get('/mouvements');
+      return response.data;
+    } catch (e) {
+      throw Exception("Erreur mouvements: $e");
+    }
+  }
 }

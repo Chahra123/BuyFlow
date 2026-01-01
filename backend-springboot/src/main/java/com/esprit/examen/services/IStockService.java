@@ -1,6 +1,7 @@
 package com.esprit.examen.services;
 
 import java.util.List;
+import com.esprit.examen.dto.response.StockStatsResponse;
 import com.esprit.examen.entities.Stock;
 
 public interface IStockService {
@@ -17,6 +18,8 @@ public interface IStockService {
 
 	String retrieveStatusStock();
 
-    int getQteTotale(Long idStock);
+	int getQteTotale(Long idStock);
+
+	StockStatsResponse getStockStats();
 
 }
