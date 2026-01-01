@@ -95,3 +95,16 @@
 
 ## 📝 Auteur
 Développé avec passion pour simplifier les flux d'achats. 🚀
+
+## Contributing
+
+1. Fork repository
+2. Create feature branch
+3. Commit changes
+4. Push and open a Pull Request
+
+---
+
+## License
+
+Licensed under **CC0-1.0 (Public Domain)**.
