@@ -1,39 +1,44 @@
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../config/app_config.dart';
 import '../models/reglement.dart';
-import '../core/di/service_locator.dart';
-import '../core/network/dio_client.dart';
 
 class ReglementService {
-  Dio get _dio => sl<DioClient>().dio;
+  final String baseUrl = AppConfig.baseUrl;
 
   Future<List<Reglement>> getReglements() async {
-    try {
-      final response = await _dio.get('/retrieve-all-reglements');
-      final List<dynamic> data = response.data;
+    final response = await http.get(Uri.parse("$baseUrl/retrieve-all-reglements"));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
       return data.map((e) => Reglement.fromJson(e)).toList();
-    } catch (e) {
-      throw Exception("Erreur lors de la récupération des règlements: $e");
+    } else {
+      throw Exception("Erreur lors de la récupération des règlements");
     }
   }
 
   Future<Reglement> getReglementById(int id) async {
-    try {
-      final response = await _dio.get('/retrieve-reglement/$id');
-      return Reglement.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Règlement introuvable: $e");
+    final response = await http.get(Uri.parse("$baseUrl/retrieve-reglement/$id"));
+
+    if (response.statusCode == 200) {
+      return Reglement.fromJson(json.decode(response.body));
+    } else {
+      throw Exception("Règlement introuvable");
     }
   }
 
   Future<Reglement> addReglement(Reglement r) async {
-    try {
-      final response = await _dio.post(
-        '/add-reglement',
-        data: r.toJson(),
-      );
-      return Reglement.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Erreur lors de l'ajout du règlement: $e");
+    final response = await http.post(
+      Uri.parse("$baseUrl/add-reglement"),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(r.toJson()),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return Reglement.fromJson(json.decode(response.body));
+    } else {
+      throw Exception("Erreur lors de l'ajout du règlement");
     }
   }
 }

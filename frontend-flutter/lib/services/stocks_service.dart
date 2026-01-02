@@ -1,86 +1,75 @@
-import 'package:dio/dio.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import '../config/app_config.dart';
 import '../models/stock.dart';
-import '../core/di/service_locator.dart';
-import '../core/network/dio_client.dart';
 
 class StockService {
-  Dio get _dio => sl<DioClient>().dio;
+  final String baseUrl = "${AppConfig.baseUrl}/stocks";
 
   Future<List<Stock>> getStocks() async {
-    try {
-      final response = await _dio.get('/stocks');
-      final List<dynamic> data = response.data;
+    final response = await http.get(Uri.parse(baseUrl));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
       return data.map((json) => Stock.fromJson(json)).toList();
-    } catch (e) {
-      throw Exception("Erreur lors de la récupération des stocks: $e");
+    } else {
+      throw Exception("Erreur lors de la récupération des stocks");
     }
   }
 
   Future<Stock> getStockById(int id) async {
-    try {
-      final response = await _dio.get('/stocks/$id');
-      return Stock.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Stock introuvable: $e");
+    final response = await http.get(Uri.parse("$baseUrl/$id"));
+
+    if (response.statusCode == 200) {
+      return Stock.fromJson(json.decode(response.body));
+    } else {
+      throw Exception("Stock introuvable");
     }
   }
 
   Future<Stock> addStock(Stock stock) async {
-    try {
-      final response = await _dio.post(
-        '/stocks',
-        data: stock.toJson(),
-      );
-      return Stock.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Erreur lors de l'ajout du stock: $e");
+    final response = await http.post(
+      Uri.parse(baseUrl),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(stock.toJson()),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return Stock.fromJson(json.decode(response.body));
+    } else {
+      throw Exception("Erreur lors de l'ajout du stock");
     }
   }
 
   Future<Stock> updateStock(Stock stock) async {
-    try {
-      final response = await _dio.put(
-        '/stocks',
-        data: stock.toJson(),
-      );
-      return Stock.fromJson(response.data);
-    } catch (e) {
-      throw Exception("Erreur lors de la modification: $e");
+    final response = await http.put(
+      Uri.parse(baseUrl),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(stock.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return Stock.fromJson(json.decode(response.body));
+    } else {
+      throw Exception("Erreur lors de la modification");
     }
   }
 
   Future<void> deleteStock(int id) async {
-    try {
-      await _dio.delete('/stocks/$id');
-    } catch (e) {
-      throw Exception("Erreur lors de la suppression: $e");
+    final response = await http.delete(Uri.parse("$baseUrl/$id"));
+
+    if (response.statusCode != 200) {
+      throw Exception("Erreur lors de la suppression");
     }
   }
 
   Future<int> getQteTotale(int idStock) async {
-    try {
-      final response = await _dio.get('/stocks/$idStock/qteTotale');
-      return response.data is int ? response.data : int.parse(response.data.toString());
-    } catch (e) {
-      throw Exception("Erreur lors de la récupération de qteTotale: $e");
-    }
-  }
-
-  Future<Map<String, dynamic>> getStockStats() async {
-    try {
-      final response = await _dio.get('/stocks/stats');
-      return response.data;
-    } catch (e) {
-      throw Exception("Erreur stats stock: $e");
-    }
-  }
-
-  Future<List<dynamic>> getMouvements() async {
-    try {
-      final response = await _dio.get('/mouvements');
-      return response.data;
-    } catch (e) {
-      throw Exception("Erreur mouvements: $e");
+    final response = await http.get(Uri.parse("$baseUrl/$idStock/qteTotale"));
+    if (response.statusCode == 200) {
+      return int.parse(response.body);
+    } else {
+      throw Exception("Erreur lors de la récupération de qteTotale");
     }
   }
 }

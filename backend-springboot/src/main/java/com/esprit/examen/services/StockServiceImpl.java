@@ -5,10 +5,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.esprit.examen.dto.response.StockStatsResponse;
-import com.esprit.examen.repositories.MouvementStockRepository;
-import com.esprit.examen.repositories.ProduitRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.esprit.examen.entities.Stock;
@@ -24,12 +20,6 @@ public class StockServiceImpl implements IStockService {
 
     @Autowired
     ProduitServiceImpl produitService;
-
-    @Autowired
-    ProduitRepository produitRepository;
-
-    @Autowired
-    MouvementStockRepository mouvementStockRepository;
 
     @Override
     public List<Stock> retrieveAllStocks() {
@@ -93,42 +83,9 @@ public class StockServiceImpl implements IStockService {
                 .collect(Collectors.toList());
         for (int i = 0; i < stocksEnRouge.size(); i++) {
             int qte = getQteTotale(stocksEnRouge.get(i).getIdStock());
-            finalMessage = newLine + finalMessage + msgDate + newLine + ": le stock "
-                    + stocksEnRouge.get(i).getLibelleStock() + " a une quantité de " + qte
-                    + " inférieur à la quantité minimale a ne pas dépasser de " + stocksEnRouge.get(i).getQteMin()
-                    + newLine;
+            finalMessage = newLine + finalMessage + msgDate + newLine + ": le stock " + stocksEnRouge.get(i).getLibelleStock() + " a une quantité de " + qte + " inférieur à la quantité minimale a ne pas dépasser de " + stocksEnRouge.get(i).getQteMin() + newLine;
         }
         log.info(finalMessage);
         return finalMessage;
-    }
-
-    @Override
-    public StockStatsResponse getStockStats() {
-        long totalStocks = stockRepository.count();
-        long totalProducts = produitRepository.count();
-
-        List<Stock> allStocks = stockRepository.findAll();
-        long lowStockCount = allStocks.stream()
-                .filter(s -> getQteTotale(s.getIdStock()) < s.getQteMin())
-                .count();
-
-        List<StockStatsResponse.MovementSummaryDTO> recentMovements = mouvementStockRepository.findAll().stream()
-                .sorted((m1, m2) -> m2.getDateMouvement().compareTo(m1.getDateMouvement()))
-                .limit(5)
-                .map(m -> new StockStatsResponse.MovementSummaryDTO(
-                        m.getId(),
-                        m.getProduit().getLibelleProduit(),
-                        m.getQuantite(),
-                        m.getType().name(),
-                        m.getDateMouvement().toString(),
-                        m.getRaison()))
-                .collect(Collectors.toList());
-
-        return StockStatsResponse.builder()
-                .totalStocks(totalStocks)
-                .totalProducts(totalProducts)
-                .lowStockCount(lowStockCount)
-                .recentMovements(recentMovements)
-                .build();
     }
 }

@@ -11,10 +11,11 @@ import java.util.List;
 @RestController
 @CrossOrigin("*")
 @RequiredArgsConstructor
+@RequestMapping("/operateurs")
 public class OperateurController {
     private final IOperateurService operateurService;
 
-    @GetMapping("/operateurs")
+    @GetMapping
     public List<Operateur> getOperateurs() {
         return operateurService.retrieveAllOperateurs();
     }
@@ -24,7 +25,7 @@ public class OperateurController {
         return operateurService.retrieveOperateur(operateurId);
     }
 
-    @PostMapping("/operateurs")
+    @PostMapping
     public Operateur addOperateur(@RequestBody Operateur op) {
         Operateur operateur = operateurService.addOperateur(op);
         System.out.println("***************TEST CONFLITS *****************");
@@ -33,13 +34,13 @@ public class OperateurController {
     }
 
 
-    @DeleteMapping("/operateur/{operateur-id}")
+    @DeleteMapping("/{operateur-id}")
     public void removeOperateur(@PathVariable("operateur-id") Long operateurId) {
         operateurService.deleteOperateur(operateurId);
     }
 
 
-    @PutMapping("/operateurs")
+    @PutMapping
     public Operateur modifyOperateur(@RequestBody Operateur operateur) {
         return operateurService.updateOperateur(operateur);
     }

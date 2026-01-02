@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../models/stock.dart';
 import '../services/produits_service.dart';
 import '../models/produit.dart';
 import '../services/stocks_service.dart';
-import '../core/theme/app_colors.dart';
 
 class ProduitsPage extends StatefulWidget {
   const ProduitsPage({super.key});
@@ -23,12 +21,14 @@ class _ProduitsPageState extends State<ProduitsPage> {
   void initState() {
     super.initState();
     stocksFuture = StockService().getStocks();
-    _refreshProduits();
+    setState(() {
+      produits = _loadProduitsAvecQuantite();
+    });
   }
 
   void _refreshProduits() {
     setState(() {
-      produits = _loadProduitsAvecQuantite();
+      produits = service.getProduits();
     });
   }
 
@@ -56,6 +56,7 @@ class _ProduitsPageState extends State<ProduitsPage> {
         stockQte: qte,
       ));
     }
+
     return updatedList;
   }
 
@@ -64,14 +65,17 @@ class _ProduitsPageState extends State<ProduitsPage> {
       SnackBar(
         content: Row(
           children: [
-            Icon(isError ? Icons.error_outline : Icons.check_circle, color: Colors.white),
+            Icon(isError ? Icons.error_outline : Icons.check_circle,
+                color: Colors.white),
             const SizedBox(width: 12),
-            Expanded(child: Text(message, style: GoogleFonts.outfit(fontSize: 14))),
+            Text(message, style: const TextStyle(fontSize: 16)),
           ],
         ),
-        backgroundColor: isError ? AppColors.error : AppColors.success,
+        backgroundColor: isError ? Colors.red.shade600 : const Color(0xFF0074D9),
         behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -84,17 +88,17 @@ class _ProduitsPageState extends State<ProduitsPage> {
     final qteInitialeCtrl = TextEditingController(text: '0');
 
     int? selectedStockId = produit?.idStock;
-    int? originalStockId = produit?.idStock;
+    int? originalStockId = produit?.idStock;  // Garder le stock d'origine
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
+      builder: (context) => StatefulBuilder(  // Pour rebuilder le dialog
         builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            isEdit ? "Modifier" : "Nouveau produit",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            isEdit ? "Modifier le produit" : "Nouveau produit",
             textAlign: TextAlign.center,
+            style: const TextStyle(color: Color(0xFF00509E)),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -102,46 +106,101 @@ class _ProduitsPageState extends State<ProduitsPage> {
               children: [
                 TextField(
                   controller: codeCtrl,
-                  decoration: const InputDecoration(labelText: "Code produit", prefixIcon: Icon(Icons.qr_code)),
+                  decoration: const InputDecoration(
+                    labelText: "Code produit",
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: libelleCtrl,
-                  decoration: const InputDecoration(labelText: "Libellé", prefixIcon: Icon(Icons.label_outline)),
+                  decoration: const InputDecoration(
+                    labelText: "Libellé produit",
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: prixCtrl,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: "Prix", prefixIcon: Icon(Icons.euro), suffixText: "€"),
+                  decoration: const InputDecoration(
+                    labelText: "Prix",
+                    border: OutlineInputBorder(),
+                  ),
                 ),
                 const SizedBox(height: 16),
+
+                // 🆕 Dropdown avec onChange pour rebuild
                 FutureBuilder<List<Stock>>(
                   future: stocksFuture,
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const LinearProgressIndicator();
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+                    if (snapshot.hasError) {
+                      return Text("Erreur : ${snapshot.error}");
+                    }
                     final stocks = snapshot.data ?? [];
                     return DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(labelText: "Stock", prefixIcon: Icon(Icons.inventory_2_outlined)),
+                      decoration: const InputDecoration(
+                        labelText: "Stock",
+                        border: OutlineInputBorder(),
+                      ),
                       value: selectedStockId,
                       items: stocks.map((s) => DropdownMenuItem(
                         value: s.idStock,
                         child: Text(s.libelleStock),
                       )).toList(),
                       onChanged: (value) {
-                        setDialogState(() => selectedStockId = value);
+                        setDialogState(() {  // Rebuild le dialog
+                          selectedStockId = value;
+                        });
                       },
                     );
                   },
                 ),
+
+                // Afficher le champ quantité SEULEMENT si :
+                // - Nouveau produit OU
+                // - Modification avec changement de stock
                 if (!isEdit || (isEdit && selectedStockId != originalStockId)) ...[
                   const SizedBox(height: 16),
                   TextField(
                     controller: qteInitialeCtrl,
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(
-                      labelText: isEdit ? "Qté à transférer" : "Qté initiale",
-                      helperText: isEdit ? "Ajouter au nouveau stock" : null,
+                      labelText: isEdit
+                          ? "Quantité à transférer"
+                          : "Quantité initiale",
+                      border: const OutlineInputBorder(),
+                      helperText: isEdit
+                          ? "Quantité à ajouter au nouveau stock"
+                          : null,
+                    ),
+                  ),
+                ],
+
+                // Message informatif en mode édition
+                if (isEdit && selectedStockId == originalStockId) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue.shade200),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            "Pour ajuster la quantité, utilisez 'Mouvement stock'",
+                            style: TextStyle(fontSize: 13, color: Colors.blue),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -150,49 +209,63 @@ class _ProduitsPageState extends State<ProduitsPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text("Annuler"),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0074D9)),
               onPressed: () async {
-                 // Validation & processing logic (same as before but simplified params)
-                 final code = codeCtrl.text.trim();
-                 final libelle = libelleCtrl.text.trim();
-                 final prix = double.tryParse(prixCtrl.text) ?? 0.0;
-                 final qteInitiale = int.tryParse(qteInitialeCtrl.text) ?? 0;
+                final code = codeCtrl.text.trim();
+                final libelle = libelleCtrl.text.trim();
+                final prix = double.tryParse(prixCtrl.text) ?? 0.0;
+                final qteInitiale = int.tryParse(qteInitialeCtrl.text) ?? 0;
 
-                 if (code.isEmpty || libelle.isEmpty) {
-                   _showSnackBar("Champs obligatoires", isError: true);
-                   return;
-                 }
+                if (code.isEmpty || libelle.isEmpty) {
+                  _showSnackBar("Code et libellé obligatoires", isError: true);
+                  return;
+                }
 
-                 final newProduit = Produit(
-                   idProduit: produit?.idProduit,
-                   codeProduit: code,
-                   libelleProduit: libelle,
-                   prix: prix,
-                   idStock: selectedStockId,
-                 );
+                final newProduit = Produit(
+                  idProduit: produit?.idProduit,
+                  codeProduit: code,
+                  libelleProduit: libelle,
+                  prix: prix,
+                  idStock: selectedStockId,
+                );
 
-                 try {
-                   final saved = isEdit
-                       ? await service.updateProduit(newProduit)
-                       : await service.addProduit(newProduit);
-                   
-                   if (!isEdit && selectedStockId != null) {
-                     await service.assignProduitToStock(saved.idProduit!, selectedStockId!, qteInitiale);
-                   } else if (isEdit && selectedStockId != originalStockId && selectedStockId != null) {
-                     await service.assignProduitToStock(saved.idProduit!, selectedStockId!, qteInitiale);
-                   }
+                try {
+                  final saved = isEdit
+                      ? await service.updateProduit(newProduit)
+                      : await service.addProduit(newProduit);
 
-                   _showSnackBar(isEdit ? "Produit modifié" : "Produit ajouté");
-                   _refreshProduits();
-                   if (mounted) Navigator.pop(context);
-                 } catch (e) {
-                   _showSnackBar("Erreur: $e", isError: true);
-                 }
+                  // Cas 1 : Nouveau produit avec stock
+                  if (!isEdit && selectedStockId != null) {
+                    await service.assignProduitToStock(
+                        saved.idProduit!,
+                        selectedStockId!,
+                        qteInitiale
+                    );
+                  }
+
+                  // Cas 2 : Modification avec changement de stock
+                  else if (isEdit && selectedStockId != null && selectedStockId != originalStockId) {
+                    await service.assignProduitToStock(
+                        saved.idProduit!,
+                        selectedStockId!,
+                        qteInitiale
+                    );
+                  }
+
+                  _showSnackBar(isEdit ? "Produit modifié !" : "Produit ajouté !");
+                  setState(() {
+                    produits = _loadProduitsAvecQuantite();
+                  });
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  _showSnackBar("Erreur : $e", isError: true);
+                }
               },
-              child: const Text("Valider"),
+              child: const Text("Valider", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -205,10 +278,16 @@ class _ProduitsPageState extends State<ProduitsPage> {
     int quantite = 0;
     String type = "ENTREE";
 
+    // Sécurité front minimale
+    if (produit.idProduit == null) {
+      _showSnackBar("Produit invalide", isError: true);
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Mouvement", style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: const Text("Mouvement de stock"),
         content: Form(
           key: _formKey,
           child: Column(
@@ -217,39 +296,57 @@ class _ProduitsPageState extends State<ProduitsPage> {
               DropdownButtonFormField<String>(
                 value: type,
                 items: const [
-                  DropdownMenuItem(value: "ENTREE", child: Text("Entrée (+)")),
-                  DropdownMenuItem(value: "SORTIE", child: Text("Sortie (-)")),
+                  DropdownMenuItem(value: "ENTREE", child: Text("Entrée")),
+                  DropdownMenuItem(value: "SORTIE", child: Text("Sortie")),
                 ],
-                onChanged: (v) => type = v!,
                 decoration: const InputDecoration(labelText: "Type"),
+                onChanged: (value) => type = value!,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               TextFormField(
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: "Quantité"),
-                validator: (v) => (v!.isEmpty || int.parse(v) <= 0) ? "Invalide" : null,
-                onSaved: (v) => quantite = int.parse(v!),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Quantité obligatoire";
+                  }
+                  final q = int.tryParse(value);
+                  if (q == null || q <= 0) {
+                    return "Quantité invalide";
+                  }
+                  return null;
+                },
+                onSaved: (value) => quantite = int.parse(value!),
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Annuler")),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Annuler"),
+          ),
           ElevatedButton(
             onPressed: () async {
               if (!_formKey.currentState!.validate()) return;
               _formKey.currentState!.save();
+
               try {
                 await service.effectuerMouvement(
                   produitId: produit.idProduit!,
                   quantite: quantite,
                   type: type,
                 );
-                _showSnackBar("Stock mis à jour");
-                _refreshProduits();
+
                 Navigator.pop(context);
+                _showSnackBar("Mouvement effectué avec succès");
+                _refreshProduits();
               } catch (e) {
-                _showSnackBar("Erreur: $e", isError: true);
+                final msg = e.toString().contains("Quantité insuffisante")
+                    ? "Quantité insuffisante en stock"
+                    : "Erreur lors du mouvement de stock";
+
+                _showSnackBar(msg, isError: true);
               }
             },
             child: const Text("Valider"),
@@ -261,116 +358,105 @@ class _ProduitsPageState extends State<ProduitsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Produits", style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.transparent,
-        foregroundColor: AppColors.textPrimary,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        primaryColor: const Color(0xFF0074D9),
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF0074D9),
+          foregroundColor: Colors.white,
+          elevation: 4,
+          centerTitle: true,
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.secondary,
-        icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
-        label: Text("Nouveau Produit", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
-        onPressed: () => _showProduitDialog(),
-      ),
-      body: FutureBuilder<List<Produit>>(
-        future: produits,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.shopping_bag_outlined, size: 64, color: AppColors.textSecondary.withOpacity(0.5)),
-                  const SizedBox(height: 16),
-                  Text("Aucun produit", style: GoogleFonts.outfit(fontSize: 18, color: AppColors.textSecondary)),
-                ],
-              ),
-            );
-          }
-
-          final list = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: list.length,
-            itemBuilder: (context, i) {
-              final p = list[i];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Liste des produits")),
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xFF0074D9),
+          child: const Icon(Icons.add, color: Colors.white),
+          onPressed: () => _showProduitDialog(),
+        ),
+        body: FutureBuilder<List<Produit>>(
+          future: produits,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF0074D9)));
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text("Erreur : ${snapshot.error}", style: const TextStyle(color: Colors.red)));
+            }
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return const Center(child: Text("Aucun produit", style: TextStyle(color: Colors.grey, fontSize: 18)));
+            }
+            final list = snapshot.data!;
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: list.length,
+              itemBuilder: (context, i) {
+                final p = list[i];
+                return Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  child: ListTile(
+                    leading: const Icon(Icons.shopping_bag, size: 36, color: Color(0xFF0074D9)),
+                    title: Text(p.libelleProduit, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                    subtitle: Text(
+                      "Code: ${p.codeProduit} • Prix: ${p.prix}\n"
+                          "Stock: ${p.libelleStock ?? 'Aucun'} • Qté dispo: ${p.stockQte ?? '–'}",
                     ),
-                  ],
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(16),
-                  leading: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.shopping_bag, color: AppColors.secondary),
-                  ),
-                  title: Text(p.libelleProduit, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Code: ${p.codeProduit}", style: TextStyle(color: AppColors.textSecondary)),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text("${p.prix} €", style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
-                          ),
-                          const SizedBox(width: 8),
-                          if (p.libelleStock != null)
-                            Text("Stock: ${p.libelleStock} (${p.stockQte})", style: const TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  trailing: PopupMenuButton(
-                    icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(value: "edit", child: Text("Modifier")),
-                      const PopupMenuItem(value: "move", child: Text("Mouvement Stock")),
-                      const PopupMenuItem(value: "delete", child: Text("Supprimer", style: TextStyle(color: AppColors.error))),
-                    ],
-                    onSelected: (v) async {
-                      if (v == "edit") _showProduitDialog(produit: p);
-                      if (v == "move") {
-                        if (p.idStock == null) {
-                           _showSnackBar("Aucun stock assigné", isError: true);
-                        } else {
-                           _showMouvementDialog(produit: p);
+                    isThreeLine: true,
+                    trailing: PopupMenuButton(
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(value: "edit", child: Text("Modifier")),
+                        const PopupMenuItem(value: "mouvement", child: Text("Mouvement stock")),
+                        const PopupMenuItem(value: "delete", child: Text("Supprimer", style: TextStyle(color: Colors.red))),
+                      ],
+                      onSelected: (value) async {
+                        if (value == "edit")
+                          _showProduitDialog(produit: p);
+                        else if (value == "mouvement") {
+                          if (p.idStock == null) {
+                            _showSnackBar(
+                              "Impossible d’effectuer un mouvement : le produit n’est assigné à aucun stock.",
+                              isError: true,
+                            );
+                            return;
+                          }
+                          _showMouvementDialog(produit: p);
                         }
-                      }
-                      if (v == "delete") {
-                         // Delete logic
-                         await service.deleteProduit(p.idProduit!);
-                         _refreshProduits();
-                      }
-                    },
+                        else if (value == "delete" && p.idProduit != null) {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text("Supprimer ?"),
+                              content: Text("Voulez-vous vraiment supprimer « ${p.libelleProduit} » ?"),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Non")),
+                                TextButton(onPressed: () => Navigator.pop(context, true),
+                                    child: const Text("Oui", style: TextStyle(color: Colors.red))),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            try {
+                              await service.deleteProduit(p.idProduit!);
+                              _showSnackBar("Produit supprimé avec succès !");
+                              _loadProduitsAvecQuantite();
+                            } catch (e) {
+                              _showSnackBar("Échec de la suppression", isError: true);
+                            }
+                          }
+                        }
+                      },
+                    ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
