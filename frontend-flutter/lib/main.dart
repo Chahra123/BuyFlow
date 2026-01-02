@@ -3,6 +3,8 @@ import 'package:buy_flow/pages/stock_page.dart';
 import 'package:buy_flow/pages/produit_page.dart';
 import 'package:buy_flow/pages/categorie_page.dart';
 import 'package:buy_flow/pages/reglement_page.dart';
+import 'package:buy_flow/pages/secteur_activite_page.dart';
+import 'package:buy_flow/pages/fournisseur_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -171,6 +173,26 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 Navigator.pop(context);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.business, color: Color(0xFF0074D9)),
+              title: const Text("Secteurs d'activité", style: TextStyle(fontSize: 18)),
+              selected: _selectedIndex == 4,
+              selectedTileColor: Colors.blue.shade50,
+              onTap: () {
+                setState(() => _selectedIndex = 4);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_shipping, color: Color(0xFF0074D9)),
+              title: const Text("Fournisseurs", style: TextStyle(fontSize: 18)),
+              selected: _selectedIndex == 5,
+              selectedTileColor: Colors.blue.shade50,
+              onTap: () {
+                setState(() => _selectedIndex = 5);
+                Navigator.pop(context);
+              },
+            ),
           ],
         ),
       ),
@@ -180,7 +202,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           ? const ProduitsPage()
           : _selectedIndex == 2
           ? const CategoriesPage()
-          : const ReglementsPage(),
+          : _selectedIndex == 3
+          ? const ReglementsPage()
+          : _selectedIndex == 4
+          ? const SecteurActivitePage()
+          : const FournisseurPage(),
     );
   }
 }

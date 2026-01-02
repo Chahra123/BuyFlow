@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/stock.dart';
 
 class StockService {
-  final String baseUrl = "http://192.168.1.17:9091/stocks"; //Laptop ip address
+  final String baseUrl = "http://192.168.0.145:9091/stocks"; //Laptop ip address
 
   Future<List<Stock>> getStocks() async {
     final response = await http.get(Uri.parse(baseUrl));

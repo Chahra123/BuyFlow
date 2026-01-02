@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/categorie_produit.dart';
 
 class CategorieProduitService {
-  final String baseUrl = "http://192.168.1.17:9091";
+  final String baseUrl = "http://192.168.0.145:9091";
 
   Future<List<CategorieProduit>> getCategories() async {
     final response = await http.get(Uri.parse("$baseUrl/categories"));
