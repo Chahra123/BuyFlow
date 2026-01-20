@@ -23,6 +23,8 @@ import '../../pages/stock_page.dart';
 import '../../pages/produit_page.dart';
 import '../../pages/categorie_page.dart';
 import '../../pages/reglement_page.dart';
+import '../../pages/secteur_activite_page.dart';
+import '../../pages/fournisseur_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -195,6 +197,16 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'payments',
                     builder: (context, state) => const ReglementsPage(),
+                  ),
+                  GoRoute(
+                    path: 'secteurs',
+                    name: 'secteurs',
+                    builder: (context, state) => const SecteurActivitePage(),
+                  ),
+                  GoRoute(
+                    path: 'fournisseurs',
+                    name: 'fournisseurs',
+                    builder: (context, state) => const FournisseurPage(),
                   ),
                 ],
               ),

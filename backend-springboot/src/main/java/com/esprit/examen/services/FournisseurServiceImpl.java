@@ -1,6 +1,5 @@
 package com.esprit.examen.services;
 
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -31,24 +30,19 @@ public class FournisseurServiceImpl implements IFournisseurService {
 	}
 
 
-	public Fournisseur addFournisseur(Fournisseur f /*Master*/) {
-		DetailFournisseur df= new DetailFournisseur();//Slave
-		df.setDateDebutCollaboration(LocalDate.now()); //util
-		//On affecte le "Slave" au "Master"
-		f.setDetailFournisseur(df);	
+	public Fournisseur addFournisseur(Fournisseur f) {
 		fournisseurRepository.save(f);
 		return f;
 	}
 	
-	private DetailFournisseur  saveDetailFournisseur(Fournisseur f){
+	private DetailFournisseur saveDetailFournisseur(Fournisseur f){
 		DetailFournisseur df = f.getDetailFournisseur();
 		detailFournisseurRepository.save(df);
 		return df;
 	}
 
 	public Fournisseur updateFournisseur(Fournisseur f) {
-		DetailFournisseur df = saveDetailFournisseur(f);
-		f.setDetailFournisseur(df);	
+		saveDetailFournisseur(f);
 		fournisseurRepository.save(f);
 		return f;
 	}
@@ -68,7 +62,10 @@ public class FournisseurServiceImpl implements IFournisseurService {
 	public void assignSecteurActiviteToFournisseur(Long idSecteurActivite, Long idFournisseur) {
 		Fournisseur fournisseur = fournisseurRepository.findById(idFournisseur).orElse(null);
 		SecteurActivite secteurActivite = secteurActiviteRepository.findById(idSecteurActivite).orElse(null);
-        fournisseur.getSecteurActivites().add(secteurActivite);
+        if (fournisseur != null && secteurActivite != null) {
+            fournisseur.getSecteurActivites().add(secteurActivite);
+            fournisseurRepository.save(fournisseur);
+        }
 	}
 
 	

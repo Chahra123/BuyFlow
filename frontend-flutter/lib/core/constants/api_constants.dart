@@ -1,5 +1,5 @@
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:9091';
+  static const String baseUrl = 'http://10.0.2.2:9091';
 
   // Auth
   // Auth

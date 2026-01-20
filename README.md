@@ -14,6 +14,7 @@
 ## 🚀 Key Features
 
 ### 📱 Mobile Application (Frontend)
+
 - **Dynamic Dashboard**: Real-time visualization of stock statistics via interactive charts (`fl_chart`).
 - **Product Management**: View, add, and modify products with categories.
 - **Stock Movements**: Precise tracking of goods inflow and outflow.
@@ -21,6 +22,7 @@
 - **Multi-language**: Full support for French and English.
 
 ### ⚙️ Backend (API)
+
 - **REST Architecture**: Clean and documented API for seamless integration.
 - **Advanced Security**: Endpoint protection via **Spring Security** and **JWT**.
 - **Supplier Management**: Centralized database for all actors in the purchase flow.
@@ -31,19 +33,20 @@
 
 ## 🛠️ Technical Stack
 
-| Component | Technology |
-| :--- | :--- |
-| **Frontend** | Flutter, Riverpod (State Management), GoRouter, Dio (HTTP), Google Fonts |
-| **Backend** | Java 17, Spring Boot 2.5.3, Spring Security, JPA/Hibernate, Maven |
-| **Database** | MySQL |
-| **Authentication** | JWT (JSON Web Token), OAuth2 (Google integration ready) |
-| **API Documentation**| Swagger / Springfox |
+| Component             | Technology                                                               |
+| :-------------------- | :----------------------------------------------------------------------- |
+| **Frontend**          | Flutter, Riverpod (State Management), GoRouter, Dio (HTTP), Google Fonts |
+| **Backend**           | Java 17, Spring Boot 2.5.3, Spring Security, JPA/Hibernate, Maven        |
+| **Database**          | MySQL                                                                    |
+| **Authentication**    | JWT (JSON Web Token), OAuth2 (Google integration ready)                  |
+| **API Documentation** | Swagger / Springfox                                                      |
 
 ---
 
 ## 📥 Installation and Setup
 
 ### 1. Backend (Spring Boot)
+
 1. **Prerequisites**: Java 17+, MySQL 8.0+.
 2. **Configuration**: Modify the `backend-springboot/src/main/resources/application.properties` file with your MySQL credentials.
    ```properties
@@ -56,9 +59,10 @@
    cd backend-springboot
    ./mvnw spring-boot:run
    ```
-   *The API will be accessible at: `http://localhost:9091`*
+   _The API will be accessible at: `http://localhost:9091`_
 
 ### 2. Frontend (Flutter)
+
 1. **Prerequisites**: Flutter SDK (3.10+).
 2. **Dependencies**:
 
@@ -66,6 +70,7 @@
    cd frontend-flutter
    flutter pub get
    ```
+
 3. **Run**:
 
    ```bash
@@ -77,27 +82,30 @@
 ## 🔌 Useful APIs (Overview)
 
 ### Authentication (`/api/auth`)
+
 - `POST /login`: Login and obtain JWT token.
 - `POST /register`: Create an account.
 - `POST /forgot-password`: Password reset request.
 
 ### Stock Management (`/stocks`)
+
 - `GET /`: Full list of stocks.
 - `GET /stats`: Global statistics (Total products, low stock alerts).
 - `POST /`: Add a new stock location.
 
 ### Products (`/produits`)
+
 - `GET /`: List of all products.
 - `POST /`: Add a product.
 
 > [!TIP]
-> Access the interactive **Swagger** documentation once the server is running at: `http://localhost:9091/swagger-ui/`
+> Access the interactive **Swagger** documentation once the server is running at: `http://10.0.2.2:9091/swagger-ui/`
 
 ---
 
 ## 📝 Author
-Developed with passion to simplify purchase flows. 🚀
 
+Developed with passion to simplify purchase flows. 🚀
 
 ## Contributing
 

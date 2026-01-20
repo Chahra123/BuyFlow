@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final isAdmin = user?.role == 'ADMIN';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -29,7 +35,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildGrid(context),
+              _buildGrid(context, isAdmin),
             ],
           ),
         ),
@@ -122,7 +128,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGrid(BuildContext context) {
+  Widget _buildGrid(BuildContext context, bool isAdmin) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -155,6 +161,20 @@ class HomeScreen extends StatelessWidget {
           color: Colors.green,
           onTap: () => context.push('/payments'),
         ),
+        if (isAdmin)
+          _DashboardCard(
+            title: "Secteurs",
+            icon: Icons.business_outlined,
+            color: Colors.teal,
+            onTap: () => context.pushNamed('secteurs'),
+          ),
+        if (isAdmin)
+          _DashboardCard(
+            title: "Fournisseurs",
+            icon: Icons.local_shipping,
+            color: Colors.indigo,
+            onTap: () => context.pushNamed('fournisseurs'),
+          ),
       ],
     );
   }
