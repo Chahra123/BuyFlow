@@ -9,6 +9,7 @@ import com.esprit.examen.repositories.ProduitRepository;
 import com.esprit.examen.repositories.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class MouvementStockServiceImpl implements IMouvementStockService {
@@ -19,9 +20,11 @@ public class MouvementStockServiceImpl implements IMouvementStockService {
     @Autowired
     private ProduitRepository produitRepository;
 
-@Override
-    public MouvementStock effectuerMouvement(Long produitId, Integer quantite, TypeMouvement type, String raison, String utilisateur) {
-        Produit produit = produitRepository.findById(produitId).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+    @Override
+    public MouvementStock effectuerMouvement(Long produitId, Integer quantite, TypeMouvement type, String raison,
+            String utilisateur) {
+        Produit produit = produitRepository.findById(produitId)
+                .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
         if (produit.getStock() == null) {
             throw new RuntimeException("Produit non assigné à un stock");
         }
@@ -41,6 +44,12 @@ public class MouvementStockServiceImpl implements IMouvementStockService {
     }
 
     public int calculerQuantiteProduit(Produit produit) {
-        return produit.getMouvements().stream().mapToInt(m -> m.getType() == TypeMouvement.ENTREE ? m.getQuantite() : -m.getQuantite()).sum();
+        return produit.getMouvements().stream()
+                .mapToInt(m -> m.getType() == TypeMouvement.ENTREE ? m.getQuantite() : -m.getQuantite()).sum();
+    }
+
+    @Override
+    public List<MouvementStock> retrieveAllMouvements() {
+        return mouvementStockRepository.findAll();
     }
 }

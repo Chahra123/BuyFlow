@@ -52,6 +52,7 @@ public class SecurityConfig {
                         "/api/users/profile-picture/**")
                 .permitAll()
                 .antMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                .antMatchers("/api/delivery/**").hasRole("LIVREUR")
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()

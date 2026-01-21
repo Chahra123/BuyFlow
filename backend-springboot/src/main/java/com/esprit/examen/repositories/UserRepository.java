@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -24,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     long countByEnabledTrue();
     long countByRole(com.esprit.examen.entities.Role role);
     long countByCreatedAtAfter(java.time.LocalDateTime date);
+
+    List<User> findByRole(com.esprit.examen.entities.Role role);
 }
