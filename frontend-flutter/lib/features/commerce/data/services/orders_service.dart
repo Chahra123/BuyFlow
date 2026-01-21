@@ -50,7 +50,7 @@ class OrdersService {
   }
   Future<List<int>> downloadInvoicePdfBytes(int id) async {
 	 String baseUrl = 'http://localhost:9091';
-    final res = await http.get(Uri.parse(baseUrl+'/api/orders/$id/invoice'));
+    final res = await http.get(Uri.parse('$baseUrl/api/orders/$id/invoice'));
     if (res.statusCode == 200) {
       return res.bodyBytes;
     }

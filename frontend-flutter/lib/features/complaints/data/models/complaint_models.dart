@@ -43,14 +43,16 @@ class ComplaintMessageDto {
   });
 
   factory ComplaintMessageDto.fromJson(Map<String, dynamic> json) {
-    return ComplaintMessageDto(
-      id: (json['id'] ?? 0) as int,
-      complaintId: (json['complaintId'] ?? json['reclamationId'] ?? 0) as int,
-      senderRole: json['senderRole']?.toString() ?? json['sender']?.toString() ?? 'USER',
-      message: json['message']?.toString() ?? '',
-      createdAt: json['createdAt']?.toString(),
-    );
-  }
+  return ComplaintMessageDto(
+    id: (json['id'] ?? 0) as int,
+    complaintId: (json['complaintId'] ?? json['reclamationId'] ?? 0) as int,
+    senderRole: json['sender'] != null
+        ? (json['sender']['role']?.toString() ?? 'USER')
+        : 'USER',
+    message: json['content']?.toString() ?? '',
+    createdAt: json['sentAt']?.toString(),
+  );
+}
 
   Map<String, dynamic> toSendJson() {
     return {

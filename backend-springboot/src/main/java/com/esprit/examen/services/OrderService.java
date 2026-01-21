@@ -47,6 +47,12 @@ public class OrderService {
         return order;
     }
 
+    public CustomerOrder getMyOrder(Long id) {
+        CustomerOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        return order;
+    }
+
     @Transactional
     public CustomerOrder createOrder(CreateOrderRequest request, Principal principal) {
         User user = getConnectedUser(principal);
@@ -149,6 +155,10 @@ public class OrderService {
 
     public String getQrData(Long orderId, Principal principal) {
         CustomerOrder order = getMyOrder(orderId, principal);
+        return "ORDER:" + order.getId() + ":" + order.getDeliveryToken();
+    }
+    public String getQrData(Long orderId) {
+        CustomerOrder order = getMyOrder(orderId);
         return "ORDER:" + order.getId() + ":" + order.getDeliveryToken();
     }
 }

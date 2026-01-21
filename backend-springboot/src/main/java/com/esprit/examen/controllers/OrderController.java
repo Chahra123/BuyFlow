@@ -43,6 +43,6 @@ public class OrderController {
 
     @GetMapping("/{id}/qr")
     public QrDataResponse qr(@PathVariable Long id, Principal principal) {
-        return new QrDataResponse(orderService.getQrData(id, principal));
+        return new QrDataResponse(orderService.getQrData(id));
     }
 }

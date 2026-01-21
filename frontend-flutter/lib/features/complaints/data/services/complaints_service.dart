@@ -33,6 +33,6 @@ class ComplaintsService {
   }
 
   Future<void> sendMessage(int complaintId, String message) async {
-    await _dio.post('/api/complaints/$complaintId/messages', data: {'message': message});
+    await _dio.post('/api/complaints/$complaintId/messages', data: {'content': message});
   }
 }

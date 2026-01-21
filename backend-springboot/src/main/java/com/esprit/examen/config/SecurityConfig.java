@@ -49,7 +49,10 @@ public class SecurityConfig {
                         "/swagger-ui/**",
                         "/webjars/**",
                         "/swagger-ui.html",
-                        "/api/users/profile-picture/**")
+                        "/api/users/profile-picture/**",
+                        "/api/orders/*/invoice",
+                        "/api/orders/*/qr",
+                        "/api/complaints/*/")
                 .permitAll()
                 .antMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/api/delivery/**").hasRole("LIVREUR")

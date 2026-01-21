@@ -86,11 +86,7 @@ class _OrderDetailsScreenState extends ConsumerState<OrderDetailsScreen> {
                     onPressed: () async {
 						final bytess = await ref.read(_ordersServiceProvider).downloadInvoicePdfBytes(widget.orderId);
 						await Printing.layoutPdf(onLayout: (_) async => Uint8List.fromList(bytess));
-                      final bytes = await ref.read(_ordersServiceProvider).downloadInvoice(widget.orderId);
-                      final dir = await getTemporaryDirectory();
-                      final file = File('${dir.path}/invoice_${widget.orderId}.pdf');
-                      await file.writeAsBytes(bytes, flush: true);
-                      await OpenFilex.open(file.path);
+                      
                     },
                     icon: const Icon(Icons.picture_as_pdf),
                     label: const Text('Facture PDF'),
