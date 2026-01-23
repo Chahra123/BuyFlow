@@ -13,10 +13,10 @@ class ApiConstants {
   static const String logout = '/api/auth/logout';
 
   // Users
-  static const String userProfile = '/users/me';
-  static const String updateProfile = '/users/me';
-  static const String uploadPhoto = '/users/me/photo';
-  static const String changePassword = '/users/me/change-password';
+  static const String userProfile = '/api/users/me';
+  static const String updateProfile = '/api/users/me';
+  static const String uploadPhoto = '/api/users/me/photo';
+  static const String changePassword = '/api/users/me/change-password';
 
   // Admin
   static const String adminUsers = '/admin/users';

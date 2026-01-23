@@ -39,8 +39,12 @@ public class UserService {
     }
 
     public com.esprit.examen.dto.response.UserResponse getProfile(Principal connectedUser) {
-        var user = (User) ((org.springframework.security.authentication.UsernamePasswordAuthenticationToken) connectedUser)
+        var userPrincipal = (User) ((org.springframework.security.authentication.UsernamePasswordAuthenticationToken) connectedUser)
                 .getPrincipal();
+
+        var user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         return com.esprit.examen.dto.response.UserResponse.builder()
                 .id(user.getId())
                 .firstName(user.getFirstName())
@@ -72,6 +76,10 @@ public class UserService {
         return avatarUrl;
     }
 
+    public org.springframework.core.io.Resource loadProfilePicture(String filename) {
+        return storageService.load(filename);
+    }
+
     // Admin methods
     public User createUser(com.esprit.examen.dto.request.CreateUserRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -97,8 +105,8 @@ public class UserService {
         // Send welcome email with credentials if password was auto-generated
         if (request.getPassword() == null || request.getPassword().isBlank()) {
             emailService.sendEmail(user.getEmail(), "Account Created",
-                    "<h1>Welcome!</h1><p>Your account has been created.</p><p>Temporary password: <strong>" 
-                    + password + "</strong></p><p>Please change it upon first login.</p>");
+                    "<h1>Welcome!</h1><p>Your account has been created.</p><p>Temporary password: <strong>"
+                            + password + "</strong></p><p>Please change it upon first login.</p>");
         }
 
         return savedUser;
@@ -131,7 +139,7 @@ public class UserService {
     public void toggleUserStatus(Long id, boolean enabled) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
         user.setEnabled(enabled);
         userRepository.save(user);
 

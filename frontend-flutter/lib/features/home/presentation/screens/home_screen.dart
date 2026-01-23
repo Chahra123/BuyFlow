@@ -42,34 +42,24 @@ class HomeScreen extends ConsumerWidget {
   }
 
   Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Bonjour 👋",
-              style: GoogleFonts.outfit(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              "Gérez votre activité en un clin d'œil.",
-              style: GoogleFonts.outfit(
-                fontSize: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
+        Text(
+          "Bonjour 👋",
+          style: GoogleFonts.outfit(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
         ),
-        CircleAvatar(
-          backgroundColor: AppColors.primaryLight,
-          radius: 24,
-          child: const Icon(Icons.person, color: AppColors.primary),
+        const SizedBox(height: 4),
+        Text(
+          "Gérez votre activité en un clin d'œil.",
+          style: GoogleFonts.outfit(
+            fontSize: 16,
+            color: AppColors.textSecondary,
+          ),
         ),
       ],
     );
