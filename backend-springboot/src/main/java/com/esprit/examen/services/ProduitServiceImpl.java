@@ -6,6 +6,8 @@ import javax.transaction.Transactional;
 
 import com.esprit.examen.dto.ProduitDTO;
 import com.esprit.examen.entities.TypeMouvement;
+import com.esprit.examen.repositories.CustomerOrderItemRepository;
+import com.esprit.examen.repositories.DetailFactureRepository;
 import com.esprit.examen.repositories.MouvementStockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,12 @@ public class ProduitServiceImpl implements IProduitService {
     @Autowired
     MouvementStockServiceImpl mouvementStockService;
 
+    @Autowired
+    CustomerOrderItemRepository orderItemRepository;
+
+    @Autowired
+    DetailFactureRepository detailFactureRepository;
+
     @Override
     public List<Produit> retrieveAllProduits() {
         List<Produit> produits = (List<Produit>) produitRepository.findAll();
@@ -49,23 +57,36 @@ public class ProduitServiceImpl implements IProduitService {
         return p;
     }
 
-//	@Override
-//	public void deleteProduit(Long produitId) {
-//		produitRepository.deleteById(produitId);
-//	}
+    // @Override
+    // public void deleteProduit(Long produitId) {
+    // produitRepository.deleteById(produitId);
+    // }
 
     @Transactional
     @Override
     public void deleteProduit(Long idProduit) {
-        Produit produit = produitRepository.findById(idProduit).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+        Produit produit = produitRepository.findById(idProduit)
+                .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
 
-        int quantiteActuelle = produit.getMouvements().stream().mapToInt(m -> m.getType() == TypeMouvement.ENTREE ? m.getQuantite() : -m.getQuantite()).sum();
-
+        // Check if product is in current stock
+        int quantiteActuelle = getQuantiteProduit(idProduit);
         if (quantiteActuelle > 0) {
-            throw new RuntimeException("Impossible de supprimer un produit dont la quantité actuelle dans le stock est > 0");
+            throw new RuntimeException(
+                    "Impossible de supprimer un produit dont la quantité actuelle dans le stock est > 0");
         }
 
-        // Supprimer tous les mouvements associés
+        // Check if product is linked to orders (historical/active)
+        if (orderItemRepository.existsByProduit_IdProduit(idProduit)) {
+            throw new RuntimeException("Impossible de supprimer un produit référencé dans des commandes clients");
+        }
+
+        // Check if product is linked to supplier invoices
+        if (detailFactureRepository.existsByProduit_IdProduit(idProduit)) {
+            throw new RuntimeException("Impossible de supprimer un produit référencé dans des factures");
+        }
+
+        // If we reach here, movements will be deleted by orphanRemoval or manual delete
+        // if not configured
         mouvementStockRepository.deleteAll(produit.getMouvements());
 
         produitRepository.delete(produit);
@@ -100,11 +121,16 @@ public class ProduitServiceImpl implements IProduitService {
 
     @Override
     public ProduitDTO toDTO(Produit p) {
-        return new ProduitDTO(p.getIdProduit(), p.getCodeProduit(), p.getLibelleProduit(), p.getPrix(), p.getDateCreation() != null ? p.getDateCreation().toString() : null, p.getDateDerniereModification() != null ? p.getDateDerniereModification().toString() : null, p.getStock() != null ? p.getStock().getIdStock() : null, p.getStock() != null ? p.getStock().getLibelleStock() : null);
+        return new ProduitDTO(p.getIdProduit(), p.getCodeProduit(), p.getLibelleProduit(), p.getPrix(),
+                p.getDateCreation() != null ? p.getDateCreation().toString() : null,
+                p.getDateDerniereModification() != null ? p.getDateDerniereModification().toString() : null,
+                p.getStock() != null ? p.getStock().getIdStock() : null,
+                p.getStock() != null ? p.getStock().getLibelleStock() : null);
     }
 
     public void removeProduitFromStock(Long idProduit) {
-        Produit produit = produitRepository.findById(idProduit).orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+        Produit produit = produitRepository.findById(idProduit)
+                .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
         produit.setStock(null);
         produitRepository.save(produit);
     }
@@ -114,7 +140,7 @@ public class ProduitServiceImpl implements IProduitService {
         return mouvementStockRepository.calculerQuantiteProduit(produitId);
     }
 
-  @Override
+    @Override
     public void assignProduitToStock(Long idProduit, Long idStock, Integer qteInitiale) {
         Produit p = retrieveProduit(idProduit);
         Stock s = stockService.retrieveStock(idStock);
@@ -122,7 +148,8 @@ public class ProduitServiceImpl implements IProduitService {
         p.setStock(s);
         updateProduit(p);
         if (qteInitiale > 0) {
-            mouvementStockService.effectuerMouvement(idProduit, qteInitiale, TypeMouvement.ENTREE, "Assignation initiale", "admin");
+            mouvementStockService.effectuerMouvement(idProduit, qteInitiale, TypeMouvement.ENTREE,
+                    "Assignation initiale", "admin");
         }
     }
 

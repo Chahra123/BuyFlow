@@ -5,6 +5,7 @@ import com.esprit.examen.entities.Stock;
 import com.esprit.examen.services.IStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import javax.validation.Valid;
 
 import java.util.List;
 
@@ -32,12 +33,12 @@ public class StockController {
     }
 
     @PostMapping
-    public Stock addStock(@RequestBody Stock s) {
+    public Stock addStock(@Valid @RequestBody Stock s) {
         return stockService.addStock(s);
     }
 
     @PutMapping
-    public Stock modifyStock(@RequestBody Stock stock) {
+    public Stock modifyStock(@Valid @RequestBody Stock stock) {
         return stockService.updateStock(stock);
     }
 

@@ -2,11 +2,9 @@ package com.esprit.examen.services;
 
 import com.esprit.examen.entities.MouvementStock;
 import com.esprit.examen.entities.Produit;
-import com.esprit.examen.entities.Stock;
 import com.esprit.examen.entities.TypeMouvement;
 import com.esprit.examen.repositories.MouvementStockRepository;
 import com.esprit.examen.repositories.ProduitRepository;
-import com.esprit.examen.repositories.StockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -27,6 +25,9 @@ public class MouvementStockServiceImpl implements IMouvementStockService {
                 .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
         if (produit.getStock() == null) {
             throw new RuntimeException("Produit non assigné à un stock");
+        }
+        if (quantite == null || quantite <= 0) {
+            throw new RuntimeException("La quantité du mouvement doit être strictement positive");
         }
         if (type == TypeMouvement.SORTIE) {
             int qteDisponible = calculerQuantiteProduit(produit);

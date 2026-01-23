@@ -166,6 +166,16 @@ class _ProduitsPageState extends State<ProduitsPage> {
                    return;
                  }
 
+                 if (prix < 0) {
+                   _showSnackBar("Le prix ne peut pas être négatif", isError: true);
+                   return;
+                 }
+
+                 if (qteInitiale < 0) {
+                   _showSnackBar("La quantité ne peut pas être négative", isError: true);
+                   return;
+                 }
+
                  final newProduit = Produit(
                    idProduit: produit?.idProduit,
                    codeProduit: code,
@@ -385,9 +395,13 @@ class _ProduitsPageState extends State<ProduitsPage> {
                         }
                       }
                       if (v == "delete") {
-                         // Delete logic
-                         await service.deleteProduit(p.idProduit!);
-                         _refreshProduits();
+                        try {
+                          await service.deleteProduit(p.idProduit!);
+                          _refreshProduits();
+                          _showSnackBar("Produit supprimé");
+                        } catch (e) {
+                          _showSnackBar("$e", isError: true);
+                        }
                       }
                     },
                   ),
