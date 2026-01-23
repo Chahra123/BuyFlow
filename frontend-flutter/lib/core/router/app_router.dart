@@ -33,6 +33,8 @@ import '../../features/complaints/presentation/screens/complaint_chat_screen.dar
 import '../../features/complaints/presentation/screens/create_complaint_screen.dart';
 import '../../features/delivery/presentation/screens/delivery_orders_screen.dart';
 import '../../features/delivery/presentation/screens/scan_qr_screen.dart';
+import '../../pages/fournisseur_page.dart';
+import '../../pages/secteur_activite_page.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -205,6 +207,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'payments',
                     builder: (context, state) => const ReglementsPage(),
+                  ),
+                  GoRoute(
+                    path: 'fournisseurs',
+                    builder: (context, state) => const FournisseurPage(),
+                  ),
+                  GoRoute(
+                    path: 'secteurs',
+                    builder: (context, state) => const SecteurActivitePage(),
                   ),
                   // Commerce shortcuts accessible from Home
                   GoRoute(

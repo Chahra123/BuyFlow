@@ -184,6 +184,18 @@ class HomeScreen extends ConsumerWidget {
           color: Colors.green,
           onTap: () => context.push('/payments'),
         ),
+        _DashboardCard(
+          title: "Fournisseurs",
+          icon: Icons.business_outlined,
+          color: Colors.deepOrange,
+          onTap: () => context.push('/fournisseurs'),
+        ),
+        _DashboardCard(
+          title: "Secteurs",
+          icon: Icons.domain_outlined,
+          color: Colors.cyan,
+          onTap: () => context.push('/secteurs'),
+        ),
       ],
     );
   }
