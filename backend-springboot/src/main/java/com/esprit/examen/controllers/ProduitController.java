@@ -31,16 +31,19 @@ public class ProduitController {
      * associés
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Produit addProduit(@Valid @RequestBody Produit p) {
         return produitService.addProduit(p);
     }
 
     @DeleteMapping("/{produit-id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void removeProduit(@PathVariable("produit-id") Long produitId) {
         produitService.deleteProduit(produitId);
     }
 
     @PutMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Produit modifyProduit(@Valid @RequestBody Produit p) {
         return produitService.updateProduit(p);
     }
@@ -61,12 +64,14 @@ public class ProduitController {
     }
 
     @PutMapping(value = "/assignProduitToStock/{idProduit}/{idStock}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock,
             @RequestParam(required = false, defaultValue = "0") Integer qteInitiale) {
         produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
     }
 
     @PutMapping("/removeProduitFromStock/{idProduit}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void removeProduitFromStock(@PathVariable Long idProduit) {
         produitService.removeProduitFromStock(idProduit);
     }

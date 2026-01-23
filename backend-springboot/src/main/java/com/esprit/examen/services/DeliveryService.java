@@ -21,7 +21,8 @@ public class DeliveryService {
     private final UserRepository userRepository;
 
     private User getCourier(Principal principal) {
-        if (principal == null) throw new BadRequestException("Missing authentication");
+        if (principal == null)
+            throw new BadRequestException("Missing authentication");
         return userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
@@ -30,8 +31,7 @@ public class DeliveryService {
         User courier = getCourier(principal);
         return orderRepository.findByAssignedCourierAndStatusInOrderByUpdatedAtDesc(
                 courier,
-                List.of(OrderStatus.ASSIGNED, OrderStatus.OUT_FOR_DELIVERY)
-        );
+                List.of(OrderStatus.ASSIGNED, OrderStatus.OUT_FOR_DELIVERY));
     }
 
     @Transactional
@@ -74,7 +74,8 @@ public class DeliveryService {
             throw new BadRequestException("Invalid QR order id");
         }
         String token = parts[2];
-        if (!order.getId().equals(parsedId) || order.getDeliveryToken() == null || !order.getDeliveryToken().equals(token)) {
+        if (!order.getId().equals(parsedId) || order.getDeliveryToken() == null
+                || !order.getDeliveryToken().equals(token)) {
             throw new BadRequestException("QR does not match this order");
         }
 

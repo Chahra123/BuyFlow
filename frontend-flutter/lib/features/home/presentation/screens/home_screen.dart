@@ -10,8 +10,10 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final role = ref.watch(authProvider).user?.role;
+    final user = ref.watch(authProvider).user;
+    final role = user?.role;
     final isCourier = role == 'LIVREUR' || role == 'DELIVERY';
+    final isAdmin = role == 'ADMIN' || role == 'ROLE_ADMIN';
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -33,7 +35,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildGrid(context, isCourier: isCourier),
+              _buildGrid(context, isCourier: isCourier, isAdmin: isAdmin),
             ],
           ),
         ),
@@ -116,7 +118,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildGrid(BuildContext context, {required bool isCourier}) {
+  Widget _buildGrid(BuildContext context, {required bool isCourier, required bool isAdmin}) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -150,42 +152,44 @@ class HomeScreen extends ConsumerWidget {
             color: Colors.brown,
             onTap: () => context.push('/delivery'),
           ),
-        _DashboardCard(
-          title: "Stocks",
-          icon: Icons.inventory_2_outlined,
-          color: Colors.blue,
-          onTap: () => context.push('/stocks'),
-        ),
-        _DashboardCard(
-          title: "Produits",
-          icon: Icons.shopping_bag_outlined,
-          color: Colors.purple,
-          onTap: () => context.push('/products'),
-        ),
-        _DashboardCard(
-          title: "Catégories",
-          icon: Icons.category_outlined,
-          color: Colors.orange,
-          onTap: () => context.push('/categories'),
-        ),
-        _DashboardCard(
-          title: "Paiements",
-          icon: Icons.payments_outlined,
-          color: Colors.green,
-          onTap: () => context.push('/payments'),
-        ),
-        _DashboardCard(
-          title: "Fournisseurs",
-          icon: Icons.business_outlined,
-          color: Colors.deepOrange,
-          onTap: () => context.push('/fournisseurs'),
-        ),
-        _DashboardCard(
-          title: "Secteurs",
-          icon: Icons.domain_outlined,
-          color: Colors.cyan,
-          onTap: () => context.push('/secteurs'),
-        ),
+        if (isAdmin) ...[
+          _DashboardCard(
+            title: "Stocks",
+            icon: Icons.inventory_2_outlined,
+            color: Colors.blue,
+            onTap: () => context.push('/stocks'),
+          ),
+          _DashboardCard(
+            title: "Produits",
+            icon: Icons.shopping_bag_outlined,
+            color: Colors.purple,
+            onTap: () => context.push('/products'),
+          ),
+          _DashboardCard(
+            title: "Catégories",
+            icon: Icons.category_outlined,
+            color: Colors.orange,
+            onTap: () => context.push('/categories'),
+          ),
+          _DashboardCard(
+            title: "Paiements",
+            icon: Icons.payments_outlined,
+            color: Colors.green,
+            onTap: () => context.push('/payments'),
+          ),
+          _DashboardCard(
+            title: "Fournisseurs",
+            icon: Icons.business_outlined,
+            color: Colors.deepOrange,
+            onTap: () => context.push('/fournisseurs'),
+          ),
+          _DashboardCard(
+            title: "Secteurs",
+            icon: Icons.domain_outlined,
+            color: Colors.cyan,
+            onTap: () => context.push('/secteurs'),
+          ),
+        ],
       ],
     );
   }
