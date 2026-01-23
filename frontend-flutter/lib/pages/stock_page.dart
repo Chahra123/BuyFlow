@@ -120,6 +120,7 @@ class _StocksPageState extends State<StocksPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text("Gestion des stocks", style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
@@ -182,76 +183,75 @@ class _StocksPageState extends State<StocksPage> {
             itemCount: list.length,
             itemBuilder: (context, i) {
               final s = list[i];
-              return FutureBuilder<int>(
-                future: service.getQteTotale(s.idStock!),
-                builder: (context, qteSnapshot) {
-                  final qte = qteSnapshot.data ?? 0;
-                  final isLow = qte < s.qteMin;
-                  
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
+              // Use data directly from DTO (Zero latency)
+              final qte = s.qteTotale ?? 0;
+              final status = s.status ?? "GOOD";
+              final isCritical = status == "CRITICAL";
+              final isWarning = status == "WARNING";
+              
+              final color = isCritical ? AppColors.error : (isWarning ? Colors.orange : AppColors.success);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: Container(
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
+                      color: color.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.inventory_2,
+                      color: color,
+                    ),
+                  ),
+                  title: Text(
+                    s.libelleStock,
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        _Badge(label: "Total: $qte", color: color),
+                        const SizedBox(width: 8),
+                        _Badge(label: "Min: ${s.qteMin}", color: AppColors.textSecondary),
                       ],
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(16),
-                      leading: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: isLow ? AppColors.error.withOpacity(0.1) : AppColors.primary.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.inventory_2,
-                          color: isLow ? AppColors.error : AppColors.primary,
-                        ),
-                      ),
-                      title: Text(
-                        s.libelleStock,
-                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Row(
-                          children: [
-                            _Badge(label: "Total: $qte", color: isLow ? AppColors.error : AppColors.textSecondary),
-                            const SizedBox(width: 8),
-                            _Badge(label: "Min: ${s.qteMin}", color: AppColors.textSecondary),
-                          ],
-                        ),
-                      ),
-                      trailing: PopupMenuButton(
-                        icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-                        itemBuilder: (_) => [
-                          const PopupMenuItem(value: "edit", child: Text("Modifier")),
-                          const PopupMenuItem(value: "delete", child: Text("Supprimer", style: TextStyle(color: AppColors.error))),
-                        ],
-                        onSelected: (value) async {
-                          if (value == "edit") {
-                            _showStockDialog(stock: s);
-                          } else if (value == "delete") {
-                             // Delete logic (simplified for brevity)
-                             await service.deleteStock(s.idStock!);
-                             _refreshStocks();
-                          }
-                        },
-                      ),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => StockDetailPage(stock: s)),
-                      ),
-                    ),
-                  );
-                },
+                  ),
+                  trailing: PopupMenuButton(
+                    icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(value: "edit", child: Text("Modifier")),
+                      const PopupMenuItem(value: "delete", child: Text("Supprimer", style: TextStyle(color: AppColors.error))),
+                    ],
+                    onSelected: (value) async {
+                      if (value == "edit") {
+                        _showStockDialog(stock: s);
+                      } else if (value == "delete") {
+                         await service.deleteStock(s.idStock!);
+                         _refreshStocks();
+                      }
+                    },
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => StockDetailPage(stock: s)),
+                  ),
+                ),
               );
             },
           );

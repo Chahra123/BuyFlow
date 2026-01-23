@@ -131,4 +131,23 @@ public class StockServiceImpl implements IStockService {
                 .recentMovements(recentMovements)
                 .build();
     }
+
+    @Override
+    public List<com.esprit.examen.dto.StockDto> retrieveAllStocksDetailed() {
+        log.info("In method retrieveAllStocksDetailed");
+        List<Stock> stocks = stockRepository.findAll();
+        return stocks.stream().map(stock -> {
+            int qteTotale = getQteTotale(stock.getIdStock());
+            String status = qteTotale < stock.getQteMin() ? "CRITICAL"
+                    : (qteTotale == stock.getQteMin() ? "WARNING" : "GOOD");
+
+            return com.esprit.examen.dto.StockDto.builder()
+                    .idStock(stock.getIdStock())
+                    .libelleStock(stock.getLibelleStock())
+                    .qteMin(stock.getQteMin())
+                    .qteTotale(qteTotale)
+                    .status(status)
+                    .build();
+        }).collect(Collectors.toList());
+    }
 }

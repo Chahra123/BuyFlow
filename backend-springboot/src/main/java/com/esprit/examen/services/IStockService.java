@@ -22,4 +22,5 @@ public interface IStockService {
 
 	StockStatsResponse getStockStats();
 
+	List<com.esprit.examen.dto.StockDto> retrieveAllStocksDetailed();
 }
