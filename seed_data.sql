@@ -62,7 +62,7 @@ INSERT INTO stock (libelle_stock, qte_min) VALUES
 -- id est AUTO_INCREMENT
 -- Note : Les mots de passe sont des hashs fictifs pour l'exemple (compatibles Spring Security)
 INSERT INTO _user (first_name, last_name, email, password, role, enabled, deleted, created_at, provider) VALUES
-('Admin', 'System', 'admin@buyflow.tn', '$2a$10$8.UnVuG9HHgffUDAlk8q6OuVGkqnRAdyzBq6vAtC0.vW9gWv6tA2.', 'ADMIN', 1, 0, NOW(), 'LOCAL'),
+('Admin', 'System', 'admin2@buyflow.tn', '$2a$10$8.UnVuG9HHgffUDAlk8q6OuVGkqnRAdyzBq6vAtC0.vW9gWv6tA2.', 'ADMIN', 1, 0, NOW(), 'LOCAL'),
 ('Houcine', 'Ben Ali', 'houcine@buyflow.tn', '$2a$10$8.UnVuG9HHgffUDAlk8q6OuVGkqnRAdyzBq6vAtC0.vW9gWv6tA2.', 'USER', 1, 0, NOW(), 'LOCAL'),
 ('Ahmed', 'Livreur', 'ahmed@buyflow.tn', '$2a$10$8.UnVuG9HHgffUDAlk8q6OuVGkqnRAdyzBq6vAtC0.vW9gWv6tA2.', 'LIVREUR', 1, 0, NOW(), 'LOCAL'),
 ('Sami', 'Acheteur', 'sami@buyflow.tn', '$2a$10$8.UnVuG9HHgffUDAlk8q6OuVGkqnRAdyzBq6vAtC0.vW9gWv6tA2.', 'USER', 1, 0, NOW(), 'LOCAL');
