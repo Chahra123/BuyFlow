@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/constants/api_constants.dart';
 import 'package:buy_flow/l10n/app_localizations.dart';
 import '../providers/admin_provider.dart';
 
@@ -111,9 +114,15 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
                               child: ListTile(
                                 leading: Stack(
                                   children: [
-                                    CircleAvatar(
-                                      backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-                                      child: user.avatarUrl == null ? Text(user.firstName.isNotEmpty ? user.firstName[0] : '?') : null,
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.grey.shade200,
+                                      ),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: _buildAvatarImage(context, user),
                                     ),
                                     Positioned(
                                       bottom: 0,
@@ -159,6 +168,37 @@ class _UserListScreenState extends ConsumerState<UserListScreen> {
           ),
         ],
       ),
+    );
+  }
+  Widget _buildAvatarImage(BuildContext context, user) {
+    if (user.avatarUrl == null || user.avatarUrl!.isEmpty) {
+      return Center(
+        child: Text(
+          user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '?',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    String imageUrl = user.avatarUrl!;
+    if (!imageUrl.startsWith('http')) {
+      String baseUrl = ApiConstants.baseUrl;
+      imageUrl = '$baseUrl$imageUrl';
+    }
+    
+    // Quick fix for Android Emulator 'localhost' issue
+    if (!kIsWeb && imageUrl.contains('localhost') && Theme.of(context).platform == TargetPlatform.android) {
+        imageUrl = imageUrl.replaceFirst('localhost', '10.0.2.2');
+    }
+
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => const Center(child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: CircularProgressIndicator(strokeWidth: 2),
+      )),
+      errorWidget: (context, url, error) => const Center(child: Icon(Icons.error, size: 20, color: Colors.red)),
     );
   }
 }

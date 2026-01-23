@@ -21,7 +21,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  String _selectedRole = 'USER';
+  bool _isPasswordVisible = false;
+
 
   Future<void> _register() async {
     if (_formKey.currentState!.validate()) {
@@ -30,7 +31,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             _passwordController.text,
             _firstNameController.text,
             _lastNameController.text,
-            _selectedRole,
+            'USER',
           );
       if (success) {
         if (mounted) {
@@ -154,28 +155,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         
                         TextFormField(
                           controller: _passwordController,
-                          obscureText: true,
+                          obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
                             labelText: l10n.password,
                             prefixIcon: const Icon(Icons.lock_outline),
                             helperText: "8 caractères min, majuscule, chiffre",
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
+                            ),
                           ),
                           validator: Validators.validatePassword,
                         ),
                         const SizedBox(height: 24),
 
-                        DropdownButtonFormField<String>(
-                          value: _selectedRole,
-                          items: const [
-                             DropdownMenuItem(value: 'USER', child: Text('Utilisateur Standard')),
-                             DropdownMenuItem(value: 'ADMIN', child: Text('Administrateur')),
-                          ],
-                          onChanged: (v) => setState(() => _selectedRole = v!),
-                          decoration: const InputDecoration(
-                            labelText: "Rôle",
-                            prefixIcon: Icon(Icons.badge_outlined),
-                          ),
-                        ),
                         const SizedBox(height: 32),
 
                         if (isLoading)

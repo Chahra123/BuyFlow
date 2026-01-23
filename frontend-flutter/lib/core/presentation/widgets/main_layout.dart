@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../features/auth/presentation/providers/auth_provider.dart';
 
 class MainLayout extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -17,10 +18,15 @@ class MainLayout extends ConsumerWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) {
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
+          // Handle Logout tap
+          if (index == 4) {
+            _showLogoutDialog(context, ref);
+          } else {
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          }
         },
         destinations: [
           const NavigationDestination(
@@ -43,10 +49,34 @@ class MainLayout extends ConsumerWidget {
             selectedIcon: Icon(Icons.person),
             label: 'Profile',
           ),
-          const NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+          NavigationDestination(
+            icon: Icon(Icons.logout_outlined),
+            selectedIcon: Icon(Icons.logout),
+            label: 'Logout',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Déconnexion'),
+        content: const Text('Voulez-vous vraiment vous déconnecter ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              ref.read(authProvider.notifier).logout();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Déconnexion'),
           ),
         ],
       ),

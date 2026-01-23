@@ -21,6 +21,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+   bool _isPasswordVisible = false;
+
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       final success = await ref
@@ -83,7 +85,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                          style: GoogleFonts.outfit(
                            fontSize: 18,
                            color: Colors.white70,
-                         ),
+                           ),
                        ),
                     ],
                   ),
@@ -131,20 +133,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         const SizedBox(height: 24),
                         TextFormField(
                           controller: _passwordController,
-                          obscureText: true,
+                          obscureText: !_isPasswordVisible,
                           decoration: InputDecoration(
                             labelText: l10n.password,
                             prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: TextButton(
-                              onPressed: () => context.push('/forgot-password'),
-                              child: Text(
-                                l10n.forgotPassword,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isPasswordVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                               ),
+                              onPressed: () {
+                                setState(() {
+                                  _isPasswordVisible = !_isPasswordVisible;
+                                });
+                              },
                             ),
                           ),
                           validator: (v) => v!.isEmpty ? "Requis" : null,
                           onFieldSubmitted: (_) => _login(),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => context.push('/forgot-password'),
+                            child: Text(
+                              l10n.forgotPassword,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 32),
 

@@ -13,14 +13,14 @@ class ApiConstants {
   static const String logout = '/api/auth/logout';
 
   // Users
-  static const String userProfile = '/users/me';
-  static const String updateProfile = '/users/me';
-  static const String uploadPhoto = '/users/me/photo';
-  static const String changePassword = '/users/me/change-password';
+  static const String userProfile = '/api/users/me';
+  static const String updateProfile = '/api/users/me';
+  static const String uploadPhoto = '/api/users/me/photo';
+  static const String changePassword = '/api/users/me/change-password';
 
   // Admin
-  static const String adminUsers = '/admin/users';
-  static String adminUser(int id) => '/admin/users/$id';
-  static String adminUserStatus(int id) => '/admin/users/$id/status';
-  static const String adminStats = '/admin/stats';
+  static const String adminUsers = '/api/admin/users';
+  static String adminUser(int id) => '/api/admin/users/$id';
+  static String adminUserStatus(int id) => '/api/admin/users/$id/status';
+  static const String adminStats = '/api/admin/stats';
 }

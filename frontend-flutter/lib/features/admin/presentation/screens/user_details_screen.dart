@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/constants/api_constants.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/admin_provider.dart';
 
 class UserDetailsScreen extends ConsumerStatefulWidget {
@@ -26,6 +30,8 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(adminProvider);
     final user = state.selectedUser;
+    final currentUser = ref.watch(authProvider).user;
+    final isOwnAccount = currentUser != null && user != null && currentUser.id == user.id;
 
     return Scaffold(
       appBar: AppBar(
@@ -55,13 +61,16 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                             Center(
                               child: Stack(
                                 children: [
-                                  CircleAvatar(
-                                    radius: 60,
-                                    backgroundImage: user.avatarUrl != null ? NetworkImage(user.avatarUrl!) : null,
-                                    child: user.avatarUrl == null 
-                                        ? Text(user.firstName[0], style: const TextStyle(fontSize: 48)) 
-                                        : null,
-                                  ),
+                                    Container(
+                                      width: 120,
+                                      height: 120,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.grey.shade200,
+                                      ),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: _buildAvatarImage(context, user),
+                                    ),
                                   Positioned(
                                     bottom: 5,
                                     right: 5,
@@ -129,9 +138,13 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
                                   ),
                                   const Divider(height: 1),
                                   ListTile(
-                                    leading: const Icon(Icons.delete_forever, color: Colors.red),
-                                    title: const Text('Supprimer le compte', style: TextStyle(color: Colors.red)),
-                                    onTap: () async {
+                                    enabled: !isOwnAccount,
+                                    leading: Icon(Icons.delete_forever, color: isOwnAccount ? Colors.grey : Colors.red),
+                                    title: Text(
+                                      isOwnAccount ? 'Vous ne pouvez pas supprimer votre propre compte' : 'Supprimer le compte',
+                                      style: TextStyle(color: isOwnAccount ? Colors.grey : Colors.red),
+                                    ),
+                                    onTap: isOwnAccount ? null : () async {
                                       final confirmed = await showDialog<bool>(
                                         context: context,
                                         builder: (ctx) => AlertDialog(
@@ -202,6 +215,37 @@ class _UserDetailsScreenState extends ConsumerState<UserDetailsScreen> {
           ],
         ),
       ),
+    );
+  }
+  Widget _buildAvatarImage(BuildContext context, user) {
+    if (user.avatarUrl == null || user.avatarUrl!.isEmpty) {
+      return Center(
+        child: Text(
+          user.firstName.isNotEmpty ? user.firstName[0].toUpperCase() : '?',
+          style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+
+    String imageUrl = user.avatarUrl!;
+    if (!imageUrl.startsWith('http')) {
+      String baseUrl = ApiConstants.baseUrl;
+      imageUrl = '$baseUrl$imageUrl';
+    }
+    
+    // Quick fix for Android Emulator 'localhost' issue
+    if (!kIsWeb && imageUrl.contains('localhost') && Theme.of(context).platform == TargetPlatform.android) {
+        imageUrl = imageUrl.replaceFirst('localhost', '10.0.2.2');
+    }
+
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => const Center(child: Padding(
+        padding: EdgeInsets.all(20.0),
+        child: CircularProgressIndicator(strokeWidth: 4),
+      )),
+      errorWidget: (context, url, error) => const Center(child: Icon(Icons.error, size: 40, color: Colors.red)),
     );
   }
 }
