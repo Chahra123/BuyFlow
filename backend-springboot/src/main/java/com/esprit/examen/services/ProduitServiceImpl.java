@@ -17,6 +17,14 @@ import com.esprit.examen.repositories.ProduitRepository;
 import com.esprit.examen.repositories.StockRepository;
 import lombok.extern.slf4j.Slf4j;
 import com.esprit.examen.entities.MouvementStock;
+import com.esprit.examen.repositories.CategorieProduitRepository;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import org.springframework.web.multipart.MultipartFile;
+import com.esprit.examen.entities.CategorieProduit;
 
 @Service
 @Slf4j
@@ -26,6 +34,8 @@ public class ProduitServiceImpl implements IProduitService {
     ProduitRepository produitRepository;
     @Autowired
     StockRepository stockRepository;
+    @Autowired
+    private CategorieProduitRepository categorieProduitRepository;
 
     @Autowired
     MouvementStockRepository mouvementStockRepository;
@@ -53,6 +63,13 @@ public class ProduitServiceImpl implements IProduitService {
 
     @Transactional
     public Produit addProduit(Produit p) {
+        if (p.getCategorieProduit() != null && p.getCategorieProduit().getIdCategorieProduit() != null) {
+            CategorieProduit categorie = categorieProduitRepository
+                    .findById(p.getCategorieProduit().getIdCategorieProduit())
+                    .orElseThrow(() -> new RuntimeException("Catégorie introuvable"));
+
+            p.setCategorieProduit(categorie);
+        }
         produitRepository.save(p);
         return p;
     }
@@ -93,8 +110,28 @@ public class ProduitServiceImpl implements IProduitService {
     }
 
     @Override
+    @Transactional
     public Produit updateProduit(Produit p) {
-        return produitRepository.save(p);
+        Produit existing = produitRepository.findById(p.getIdProduit())
+                .orElseThrow(() -> new RuntimeException("Produit introuvable"));
+
+        // Champs simples
+        existing.setCodeProduit(p.getCodeProduit());
+        existing.setLibelleProduit(p.getLibelleProduit());
+        existing.setPrix(p.getPrix());
+
+        // Catégorie (si fournie)
+        if (p.getCategorieProduit() != null && p.getCategorieProduit().getIdCategorieProduit() != null) {
+            CategorieProduit categorie = categorieProduitRepository
+                    .findById(p.getCategorieProduit().getIdCategorieProduit())
+                    .orElseThrow(() -> new RuntimeException("Catégorie introuvable"));
+            existing.setCategorieProduit(categorie);
+        }
+
+        // ⚠️ IMPORTANT : on NE TOUCHE PAS au stock ici
+        // Le stock est géré EXCLUSIVEMENT par assignProduitToStock
+
+        return produitRepository.save(existing);
     }
 
     @Override
@@ -125,7 +162,9 @@ public class ProduitServiceImpl implements IProduitService {
                 p.getDateCreation() != null ? p.getDateCreation().toString() : null,
                 p.getDateDerniereModification() != null ? p.getDateDerniereModification().toString() : null,
                 p.getStock() != null ? p.getStock().getIdStock() : null,
-                p.getStock() != null ? p.getStock().getLibelleStock() : null);
+                p.getStock() != null ? p.getStock().getLibelleStock() : null,
+                p.getCategorieProduit() != null ? p.getCategorieProduit().getIdCategorieProduit() : null,
+                p.getCategorieProduit() != null ? p.getCategorieProduit().getLibelleCategorie() : null);
     }
 
     public void removeProduitFromStock(Long idProduit) {
@@ -157,6 +196,42 @@ public class ProduitServiceImpl implements IProduitService {
     public List<MouvementStock> getMouvementsProduit(Long idProduit) {
         Produit p = retrieveProduit(idProduit);
         return new ArrayList<>(p.getMouvements());
+    }
+
+    @Override
+    public Produit uploadImage(Long produitId, MultipartFile file) {
+
+        Produit produit = produitRepository.findById(produitId)
+                .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
+
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("Fichier image manquant");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null ||
+                (!contentType.equals("image/png") && !contentType.equals("image/jpeg"))) {
+            throw new RuntimeException("Format image non supporté");
+        }
+
+        String extension = contentType.equals("image/png") ? "png" : "jpg";
+        String fileName = "produit-" + produitId + "." + extension;
+
+        try {
+            Path uploadPath = Paths.get("uploads/products");
+            if (!Files.exists(uploadPath)) {
+                Files.createDirectories(uploadPath);
+            }
+
+            Path filePath = uploadPath.resolve(fileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            produit.setImageUrl("/uploads/products/" + fileName);
+            return produitRepository.save(produit);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Erreur lors de l'upload de l'image", e);
+        }
     }
 
 }

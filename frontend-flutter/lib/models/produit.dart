@@ -9,6 +9,10 @@ class Produit {
   final String? libelleStock;
   final int? stockQte;
 
+  // ===== CATEGORIE =====
+  final int? idCategorieProduit;
+  final String? libelleCategorie;
+
   Produit({
     this.idProduit,
     required this.codeProduit,
@@ -18,7 +22,9 @@ class Produit {
     this.dateDerniereModification,
     this.idStock,
     this.libelleStock,
-    this.stockQte
+    this.stockQte,
+    this.idCategorieProduit,
+    this.libelleCategorie,
   });
 
   factory Produit.fromJson(Map<String, dynamic> json) {
@@ -34,6 +40,8 @@ class Produit {
       idStock: json['idStock'],
       libelleStock: json['libelleStock'],
       stockQte: json['stockQte'],
+      idCategorieProduit: json['idCategorieProduit'],
+      libelleCategorie: json['libelleCategorie'],
     );
   }
 
@@ -46,7 +54,11 @@ class Produit {
       "dateCreation": dateCreation,
       "dateDerniereModification": dateDerniereModification,
       "idStock": idStock,
-      "stockQte": stockQte
+      "stockQte": stockQte,
+      // ✅ catégorie envoyée sous forme objet (attendue par JPA)
+      "categorieProduit": idCategorieProduit != null
+          ? {"idCategorieProduit": idCategorieProduit}
+          : null,
     };
   }
 }

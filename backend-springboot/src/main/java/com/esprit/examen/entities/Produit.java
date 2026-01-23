@@ -37,14 +37,20 @@ public class Produit implements Serializable {
 	private Integer qteMin;
 	private LocalDate dateCreation;
 	private LocalDate dateDerniereModification;
+
+	@Column(name = "image_url")
+	private String imageUrl;
+
 	@ManyToOne
 	@JsonIgnore
 	private Stock stock;
 	@OneToMany(mappedBy = "produit")
 	@JsonIgnore
 	private Set<DetailFacture> detailFacture;
+
 	@ManyToOne
-	@JsonIgnore
+	@JoinColumn(name = "id_categorie_produit")
+	@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "produits" })
 	private CategorieProduit categorieProduit;
 
 	@OneToMany(mappedBy = "produit", cascade = CascadeType.ALL, orphanRemoval = true)

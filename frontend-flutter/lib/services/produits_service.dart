@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/MouvementStock.dart';
 import '../models/produit.dart';
 import '../core/di/service_locator.dart';
@@ -136,6 +137,27 @@ class ProduitService {
       return response.data is int ? response.data : int.parse(response.data.toString());
     } catch (e) {
       throw Exception("Erreur lors du chargement de la quantité du produit: $e");
+    }
+  }
+
+  Future<void> uploadProduitImage({
+    required int produitId,
+    required XFile image,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          image.path,
+          filename: image.name,
+        ),
+      });
+
+      await _dio.post(
+        '/produits/$produitId/image',
+        data: formData,
+      );
+    } catch (e) {
+      throw Exception("Erreur lors de l'upload de l'image: $e");
     }
   }
 }

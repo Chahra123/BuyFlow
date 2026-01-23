@@ -5,6 +5,11 @@ import '../services/produits_service.dart';
 import '../models/produit.dart';
 import '../services/stocks_service.dart';
 import '../core/theme/app_colors.dart';
+import '../models/categorie_produit.dart';
+import '../services/categories_service.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 class ProduitsPage extends StatefulWidget {
   const ProduitsPage({super.key});
@@ -17,12 +22,14 @@ class _ProduitsPageState extends State<ProduitsPage> {
   final ProduitService service = ProduitService();
   late Future<List<Produit>> produits;
   late Future<List<Stock>> stocksFuture;
+  late Future<List<CategorieProduit>> categoriesFuture;
   int? selectedStockId;
 
   @override
   void initState() {
     super.initState();
     stocksFuture = StockService().getStocks();
+    categoriesFuture = CategorieProduitService().getCategories();
     _refreshProduits();
   }
 
@@ -54,6 +61,8 @@ class _ProduitsPageState extends State<ProduitsPage> {
         idStock: p.idStock,
         libelleStock: p.libelleStock,
         stockQte: qte,
+        idCategorieProduit: p.idCategorieProduit,
+        libelleCategorie: p.libelleCategorie,
       ));
     }
     return updatedList;
@@ -84,128 +93,180 @@ class _ProduitsPageState extends State<ProduitsPage> {
     final qteInitialeCtrl = TextEditingController(text: '0');
 
     int? selectedStockId = produit?.idStock;
+    int? selectedCategorieId = produit?.idCategorieProduit;
     int? originalStockId = produit?.idStock;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text(
-            isEdit ? "Modifier" : "Nouveau produit",
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: codeCtrl,
-                  decoration: const InputDecoration(labelText: "Code produit", prefixIcon: Icon(Icons.qr_code)),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: libelleCtrl,
-                  decoration: const InputDecoration(labelText: "Libellé", prefixIcon: Icon(Icons.label_outline)),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: prixCtrl,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: "Prix", prefixIcon: Icon(Icons.euro), suffixText: "€"),
-                ),
-                const SizedBox(height: 16),
-                FutureBuilder<List<Stock>>(
-                  future: stocksFuture,
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return const LinearProgressIndicator();
-                    final stocks = snapshot.data ?? [];
-                    return DropdownButtonFormField<int>(
-                      decoration: const InputDecoration(labelText: "Stock", prefixIcon: Icon(Icons.inventory_2_outlined)),
-                      value: selectedStockId,
-                      items: stocks.map((s) => DropdownMenuItem(
-                        value: s.idStock,
-                        child: Text(s.libelleStock),
-                      )).toList(),
-                      onChanged: (value) {
-                        setDialogState(() => selectedStockId = value);
-                      },
-                    );
-                  },
-                ),
-                if (!isEdit || (isEdit && selectedStockId != originalStockId)) ...[
+        builder: (context, setDialogState) {
+          XFile? selectedImage;
+          Future<void> _pickImage() async {
+            final result = await FilePicker.platform.pickFiles(
+              type: FileType.image,
+              allowMultiple: false,
+            );
+
+            if (result != null && result.files.single.path != null) {
+              setDialogState(() {
+                selectedImage = XFile(result.files.single.path!);
+              });
+            }
+          }
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Text(
+              isEdit ? "Modifier" : "Nouveau produit",
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: codeCtrl,
+                    decoration: const InputDecoration(labelText: "Code produit", prefixIcon: Icon(Icons.qr_code)),
+                  ),
                   const SizedBox(height: 16),
                   TextField(
-                    controller: qteInitialeCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: isEdit ? "Qté à transférer" : "Qté initiale",
-                      helperText: isEdit ? "Ajouter au nouveau stock" : null,
-                    ),
+                    controller: libelleCtrl,
+                    decoration: const InputDecoration(labelText: "Libellé", prefixIcon: Icon(Icons.label_outline)),
                   ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: prixCtrl,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(labelText: "Prix", prefixIcon: Icon(Icons.euro), suffixText: "€"),
+                  ),
+                  const SizedBox(height: 16),
+                  FutureBuilder<List<CategorieProduit>>(
+                    future: categoriesFuture,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const LinearProgressIndicator();
+                      final categories = snapshot.data!;
+                      return DropdownButtonFormField<int>(
+                        decoration: const InputDecoration(labelText: "Catégorie", prefixIcon: Icon(Icons.category_outlined)),
+                        value: selectedCategorieId,
+                        items: categories.map((c) => DropdownMenuItem<int>(
+                          value: c.idCategorieProduit,
+                          child: Text(c.libelleCategorie),
+                        )).toList(),
+                        onChanged: (value) {
+                          setDialogState(() => selectedCategorieId = value);
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  FutureBuilder<List<Stock>>(
+                    future: stocksFuture,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) return const LinearProgressIndicator();
+                      final stocks = snapshot.data ?? [];
+                      return DropdownButtonFormField<int>(
+                        decoration: const InputDecoration(labelText: "Stock", prefixIcon: Icon(Icons.inventory_2_outlined)),
+                        value: selectedStockId,
+                        items: stocks.map((s) => DropdownMenuItem(
+                          value: s.idStock,
+                          child: Text(s.libelleStock),
+                        )).toList(),
+                        onChanged: (value) {
+                          setDialogState(() => selectedStockId = value);
+                        },
+                      );
+                    },
+                  ),
+                  if (!isEdit || (isEdit && selectedStockId != originalStockId)) ...[
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: qteInitialeCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: isEdit ? "Qté à transférer" : "Qté initiale",
+                        helperText: isEdit ? "Ajouter au nouveau stock" : null,
+                      ),
+                    ),
+                  ],
+                  if (isEdit) ...[
+                    const SizedBox(height: 20),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.image_outlined),
+                      label: const Text("Changer l’image"),
+                      onPressed: _pickImage,
+                    ),
+                    if (selectedImage != null) ...[
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(
+                          File(selectedImage!.path),
+                          height: 140,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ]
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Annuler"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                 // Validation & processing logic (same as before but simplified params)
-                 final code = codeCtrl.text.trim();
-                 final libelle = libelleCtrl.text.trim();
-                 final prix = double.tryParse(prixCtrl.text) ?? 0.0;
-                 final qteInitiale = int.tryParse(qteInitialeCtrl.text) ?? 0;
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Annuler"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  final code = codeCtrl.text.trim();
+                  final libelle = libelleCtrl.text.trim();
+                  final prix = double.tryParse(prixCtrl.text) ?? 0.0;
+                  final qteInitiale = int.tryParse(qteInitialeCtrl.text) ?? 0;
 
-                 if (code.isEmpty || libelle.isEmpty) {
-                   _showSnackBar("Champs obligatoires", isError: true);
-                   return;
-                 }
+                  if (code.isEmpty || libelle.isEmpty) {
+                    _showSnackBar("Champs obligatoires", isError: true);
+                    return;
+                  }
 
-                 if (prix < 0) {
-                   _showSnackBar("Le prix ne peut pas être négatif", isError: true);
-                   return;
-                 }
+                  final newProduit = Produit(
+                    idProduit: produit?.idProduit,
+                    codeProduit: code,
+                    libelleProduit: libelle,
+                    prix: prix,
+                    idStock: selectedStockId,
+                    idCategorieProduit: selectedCategorieId,
+                  );
 
-                 if (qteInitiale < 0) {
-                   _showSnackBar("La quantité ne peut pas être négative", isError: true);
-                   return;
-                 }
+                  try {
+                    final saved = isEdit
+                        ? await service.updateProduit(newProduit)
+                        : await service.addProduit(newProduit);
 
-                 final newProduit = Produit(
-                   idProduit: produit?.idProduit,
-                   codeProduit: code,
-                   libelleProduit: libelle,
-                   prix: prix,
-                   idStock: selectedStockId,
-                 );
+                    if (isEdit && selectedImage != null) {
+                      await service.uploadProduitImage(
+                        produitId: saved.idProduit!,
+                        image: selectedImage!,
+                      );
+                    }
 
-                 try {
-                   final saved = isEdit
-                       ? await service.updateProduit(newProduit)
-                       : await service.addProduit(newProduit);
-                   
-                   if (!isEdit && selectedStockId != null) {
-                     await service.assignProduitToStock(saved.idProduit!, selectedStockId!, qteInitiale);
-                   } else if (isEdit && selectedStockId != originalStockId && selectedStockId != null) {
-                     await service.assignProduitToStock(saved.idProduit!, selectedStockId!, qteInitiale);
-                   }
+                    if (!isEdit && selectedStockId != null) {
+                      await service.assignProduitToStock(saved.idProduit!, selectedStockId!, qteInitiale);
+                    } else if (isEdit && selectedStockId != originalStockId && selectedStockId != null) {
+                      await service.assignProduitToStock(saved.idProduit!, selectedStockId!, qteInitiale);
+                    }
 
-                   _showSnackBar(isEdit ? "Produit modifié" : "Produit ajouté");
-                   _refreshProduits();
-                   if (mounted) Navigator.pop(context);
-                 } catch (e) {
-                   _showSnackBar("Erreur: $e", isError: true);
-                 }
-              },
-              child: const Text("Valider"),
-            ),
-          ],
-        ),
+                    _showSnackBar(isEdit ? "Produit modifié" : "Produit ajouté");
+                    _refreshProduits();
+                    if (mounted) Navigator.pop(context);
+                  } catch (e) {
+                    _showSnackBar("Erreur: $e", isError: true);
+                  }
+                },
+                child: const Text("Valider"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -376,6 +437,9 @@ class _ProduitsPageState extends State<ProduitsPage> {
                             Text("Stock: ${p.libelleStock} (${p.stockQte})", style: const TextStyle(fontSize: 12)),
                         ],
                       ),
+                      const SizedBox(height: 6),
+                      Text("Catégorie : ${p.libelleCategorie ?? "-"}", style: const TextStyle(fontSize: 12)),
+                      Text("Créé le : ${p.dateCreation ?? "-"}", style: const TextStyle(fontSize: 12)),
                     ],
                   ),
                   trailing: PopupMenuButton(

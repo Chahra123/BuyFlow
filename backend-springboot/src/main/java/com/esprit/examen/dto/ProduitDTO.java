@@ -18,4 +18,6 @@ public class ProduitDTO {
     private String dateDerniereModification;
     private Long idStock;
     private String libelleStock;
+    private Long idCategorieProduit;
+    private String libelleCategorie;
 }
