@@ -50,4 +50,9 @@ public class StockController {
     public StockStatsResponse getStockStats() {
         return stockService.getStockStats();
     }
+
+    @GetMapping("/detailed")
+    public List<com.esprit.examen.dto.StockDto> getDetailedStocks() {
+        return stockService.retrieveAllStocksDetailed();
+    }
 }

@@ -8,7 +8,8 @@ class StockService {
 
   Future<List<Stock>> getStocks() async {
     try {
-      final response = await _dio.get('/stocks');
+      // Optimized endpoint to avoid N+1 calls
+      final response = await _dio.get('/stocks/detailed');
       final List<dynamic> data = response.data;
       return data.map((json) => Stock.fromJson(json)).toList();
     } catch (e) {
