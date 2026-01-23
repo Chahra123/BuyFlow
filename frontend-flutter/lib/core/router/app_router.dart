@@ -23,6 +23,16 @@ import '../../pages/stock_page.dart';
 import '../../pages/produit_page.dart';
 import '../../pages/categorie_page.dart';
 import '../../pages/reglement_page.dart';
+import '../../features/commerce/presentation/screens/shop_screen.dart';
+import '../../features/commerce/presentation/screens/cart_screen.dart';
+import '../../features/commerce/presentation/screens/checkout_screen.dart';
+import '../../features/commerce/presentation/screens/orders_screen.dart';
+import '../../features/commerce/presentation/screens/order_details_screen.dart';
+import '../../features/complaints/presentation/screens/complaints_screen.dart';
+import '../../features/complaints/presentation/screens/complaint_chat_screen.dart';
+import '../../features/complaints/presentation/screens/create_complaint_screen.dart';
+import '../../features/delivery/presentation/screens/delivery_orders_screen.dart';
+import '../../features/delivery/presentation/screens/scan_qr_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -195,6 +205,83 @@ final routerProvider = Provider<GoRouter>((ref) {
                   GoRoute(
                     path: 'payments',
                     builder: (context, state) => const ReglementsPage(),
+                  ),
+                  // Commerce shortcuts accessible from Home
+                  GoRoute(
+                    path: 'complaints',
+                    builder: (context, state) => const ComplaintsScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'create',
+                        builder: (context, state) {
+                          final orderId = int.tryParse(state.uri.queryParameters['orderId'] ?? '');
+                          return CreateComplaintScreen(orderId: orderId);
+                        },
+                      ),
+                      GoRoute(
+                        path: ':id',
+                        builder: (context, state) => ComplaintChatScreen(
+                          complaintId: int.parse(state.pathParameters['id']!),
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
+                    path: 'delivery',
+                    builder: (context, state) => const DeliveryOrdersScreen(),
+                    routes: [
+                      GoRoute(
+                        path: 'scan/:orderId',
+                        builder: (context, state) => ScanQrScreen(
+                          orderId: int.parse(state.pathParameters['orderId']!),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Shop
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/shop',
+                builder: (context, state) => const ShopScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'cart',
+                    builder: (context, state) => const CartScreen(),
+                  ),
+                  GoRoute(
+                    path: 'checkout',
+                    builder: (context, state) => const CheckoutScreen(),
+                  ),
+                ],
+              ),
+              // Backward-compatible direct routes
+              GoRoute(
+                path: '/cart',
+                builder: (context, state) => const CartScreen(),
+              ),
+              GoRoute(
+                path: '/checkout',
+                builder: (context, state) => const CheckoutScreen(),
+              ),
+            ],
+          ),
+          // Orders
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/orders',
+                builder: (context, state) => const OrdersScreen(),
+                routes: [
+                  GoRoute(
+                    path: ':id',
+                    builder: (context, state) => OrderDetailsScreen(
+                      orderId: int.parse(state.pathParameters['id']!),
+                    ),
                   ),
                 ],
               ),

@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final role = ref.watch(authProvider).user?.role;
+    final isCourier = role == 'LIVREUR' || role == 'DELIVERY';
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -29,7 +33,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildGrid(context),
+              _buildGrid(context, isCourier: isCourier),
             ],
           ),
         ),
@@ -122,7 +126,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildGrid(BuildContext context) {
+  Widget _buildGrid(BuildContext context, {required bool isCourier}) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -131,6 +135,31 @@ class HomeScreen extends StatelessWidget {
       mainAxisSpacing: 16,
       childAspectRatio: 1.1,
       children: [
+        _DashboardCard(
+          title: "Boutique",
+          icon: Icons.storefront_outlined,
+          color: Colors.teal,
+          onTap: () => context.go('/shop'),
+        ),
+        _DashboardCard(
+          title: "Commandes",
+          icon: Icons.receipt_long_outlined,
+          color: Colors.indigo,
+          onTap: () => context.go('/orders'),
+        ),
+        _DashboardCard(
+          title: "Réclamations",
+          icon: Icons.chat_bubble_outline,
+          color: Colors.redAccent,
+          onTap: () => context.push('/complaints'),
+        ),
+        if (isCourier)
+          _DashboardCard(
+            title: "Livraisons",
+            icon: Icons.local_shipping_outlined,
+            color: Colors.brown,
+            onTap: () => context.push('/delivery'),
+          ),
         _DashboardCard(
           title: "Stocks",
           icon: Icons.inventory_2_outlined,
