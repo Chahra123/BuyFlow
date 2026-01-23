@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Set;
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.PositiveOrZero;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -25,10 +27,14 @@ public class Produit implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idProduit;
+	@NotBlank(message = "Le code produit est obligatoire")
 	private String codeProduit;
+	@NotBlank(message = "Le libellé produit est obligatoire")
 	private String libelleProduit;
+	@PositiveOrZero(message = "Le prix ne peut pas être négatif")
 	private float prix;
-    private Integer qteMin;
+	@PositiveOrZero(message = "La quantité minimale ne peut pas être négative")
+	private Integer qteMin;
 	private LocalDate dateCreation;
 	private LocalDate dateDerniereModification;
 	@ManyToOne
@@ -41,10 +47,9 @@ public class Produit implements Serializable {
 	@JsonIgnore
 	private CategorieProduit categorieProduit;
 
-	@OneToMany(mappedBy = "produit")
+	@OneToMany(mappedBy = "produit", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonIgnore
 	private Set<MouvementStock> mouvements;
-
 
 	@PrePersist
 	private void onCreate() {
@@ -56,7 +61,5 @@ public class Produit implements Serializable {
 	private void onUpdate() {
 		dateDerniereModification = LocalDate.now();
 	}
-
-	
 
 }

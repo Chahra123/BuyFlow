@@ -55,6 +55,11 @@ public class StockServiceImpl implements IStockService {
     @Override
     public void deleteStock(Long stockId) {
         log.info("In method deleteStock");
+        Stock stock = stockRepository.findById(stockId).orElseThrow(() -> new RuntimeException("Stock non trouvé"));
+        if (stock.getProduits() != null && !stock.getProduits().isEmpty()) {
+            throw new RuntimeException(
+                    "Impossible de supprimer un stock qui contient encore des produits. Désassignez les produits d'abord.");
+        }
         stockRepository.deleteById(stockId);
     }
 

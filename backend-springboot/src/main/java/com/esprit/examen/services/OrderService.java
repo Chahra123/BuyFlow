@@ -25,9 +25,11 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProduitRepository produitRepository;
     private final MouvementStockRepository mouvementStockRepository;
+    private final IMouvementStockService mouvementStockService;
 
     private User getConnectedUser(Principal principal) {
-        if (principal == null) throw new BadRequestException("Missing authentication");
+        if (principal == null)
+            throw new BadRequestException("Missing authentication");
         return userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
@@ -79,14 +81,15 @@ public class OrderService {
                     .orElseThrow(() -> new ResourceNotFoundException("Produit not found: " + itemReq.getProduitId()));
 
             Integer available = mouvementStockRepository.calculerQuantiteProduit(produit.getIdProduit());
-            if (available == null) available = 0;
+            if (available == null)
+                available = 0;
             if (itemReq.getQuantity() == null || itemReq.getQuantity() < 1) {
                 throw new BadRequestException("Invalid quantity for produit " + produit.getIdProduit());
             }
             if (available < itemReq.getQuantity()) {
                 throw new InsufficientStockException(
-                        "Insufficient stock for produit " + produit.getLibelleProduit() + " (available=" + available + ")"
-                );
+                        "Insufficient stock for produit " + produit.getLibelleProduit() + " (available=" + available
+                                + ")");
             }
 
             BigDecimal unitPrice = BigDecimal.valueOf(produit.getPrix());
@@ -104,13 +107,12 @@ public class OrderService {
             subtotal = subtotal.add(lineTotal);
 
             // Stock decrement at validation (your rule)
-            MouvementStock m = new MouvementStock();
-            m.setProduit(produit);
-            m.setQuantite(itemReq.getQuantity());
-            m.setType(TypeMouvement.SORTIE);
-            m.setRaison("ORDER_CONFIRMED:" + UUID.randomUUID());
-            m.setUtilisateur(user.getEmail());
-            mouvementStockRepository.save(m);
+            mouvementStockService.effectuerMouvement(
+                    produit.getIdProduit(),
+                    itemReq.getQuantity(),
+                    TypeMouvement.SORTIE,
+                    "ORDER_CONFIRMED:" + UUID.randomUUID(),
+                    user.getEmail());
         }
 
         order.setSubtotal(subtotal);
@@ -131,7 +133,8 @@ public class OrderService {
         if (!order.getUser().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
             throw new org.springframework.security.access.AccessDeniedException("Not allowed");
         }
-        if (order.getAssignedCourier() != null || order.getStatus() == OrderStatus.ASSIGNED || order.getStatus() == OrderStatus.OUT_FOR_DELIVERY) {
+        if (order.getAssignedCourier() != null || order.getStatus() == OrderStatus.ASSIGNED
+                || order.getStatus() == OrderStatus.OUT_FOR_DELIVERY) {
             throw new BadRequestException("Cannot cancel after courier assignment");
         }
         if (order.getStatus() == OrderStatus.CANCELLED || order.getStatus() == OrderStatus.DELIVERED) {
@@ -140,13 +143,12 @@ public class OrderService {
 
         // Restock
         for (CustomerOrderItem item : order.getItems()) {
-            MouvementStock m = new MouvementStock();
-            m.setProduit(item.getProduit());
-            m.setQuantite(item.getQuantity());
-            m.setType(TypeMouvement.ENTREE);
-            m.setRaison("ORDER_CANCELLED:" + order.getId());
-            m.setUtilisateur(user.getEmail());
-            mouvementStockRepository.save(m);
+            mouvementStockService.effectuerMouvement(
+                    item.getProduit().getIdProduit(),
+                    item.getQuantity(),
+                    TypeMouvement.ENTREE,
+                    "ORDER_CANCELLED:" + order.getId(),
+                    user.getEmail());
         }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -157,6 +159,7 @@ public class OrderService {
         CustomerOrder order = getMyOrder(orderId, principal);
         return "ORDER:" + order.getId() + ":" + order.getDeliveryToken();
     }
+
     public String getQrData(Long orderId) {
         CustomerOrder order = getMyOrder(orderId);
         return "ORDER:" + order.getId() + ":" + order.getDeliveryToken();
