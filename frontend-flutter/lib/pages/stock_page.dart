@@ -91,6 +91,11 @@ class _StocksPageState extends State<StocksPage> {
                 return;
               }
 
+              if (qteMin < 0) {
+                _showSnackBar("La quantité minimum ne peut pas être négative", isError: true);
+                return;
+              }
+
               final newStock = Stock(
                 idStock: stock?.idStock,
                 libelleStock: libelle,
@@ -242,8 +247,13 @@ class _StocksPageState extends State<StocksPage> {
                       if (value == "edit") {
                         _showStockDialog(stock: s);
                       } else if (value == "delete") {
-                         await service.deleteStock(s.idStock!);
-                         _refreshStocks();
+                        try {
+                          await service.deleteStock(s.idStock!);
+                          _refreshStocks();
+                          _showSnackBar("Stock supprimé");
+                        } catch (e) {
+                          _showSnackBar("$e", isError: true);
+                        }
                       }
                     },
                   ),

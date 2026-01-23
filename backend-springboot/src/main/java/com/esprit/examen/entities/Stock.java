@@ -7,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.PositiveOrZero;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
@@ -25,19 +27,21 @@ public class Stock implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idStock;
+    @NotBlank(message = "Le libellé du stock est obligatoire")
     private String libelleStock;
+    @PositiveOrZero(message = "La quantité minimale ne peut pas être négative")
     private Integer qteMin;
     @OneToMany(mappedBy = "stock")
     @JsonIgnore
     private Set<Produit> produits;
 
-    public Stock(String libelleStock, Integer qte, Integer qteMin) {
+    public Stock(String libelleStock, Integer qteMin) {
         super();
         this.libelleStock = libelleStock;
         this.qteMin = qteMin;
     }
 
-    public Stock(long idStock, String libelleStock, Integer qte, Integer qteMin) {
+    public Stock(long idStock, String libelleStock, Integer qteMin) {
         super();
         this.idStock = idStock;
         this.libelleStock = libelleStock;

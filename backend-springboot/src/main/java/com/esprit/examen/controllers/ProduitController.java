@@ -6,6 +6,7 @@ import com.esprit.examen.entities.Produit;
 import com.esprit.examen.services.IProduitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import javax.validation.Valid;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,9 +19,12 @@ public class ProduitController {
 
     private final IProduitService produitService;
 
-    /* Ajouter en produit tout en lui affectant la catégorie produit et le stock associés */
+    /*
+     * Ajouter en produit tout en lui affectant la catégorie produit et le stock
+     * associés
+     */
     @PostMapping
-    public Produit addProduit(@RequestBody Produit p) {
+    public Produit addProduit(@Valid @RequestBody Produit p) {
         return produitService.addProduit(p);
     }
 
@@ -30,7 +34,7 @@ public class ProduitController {
     }
 
     @PutMapping
-    public Produit modifyProduit(@RequestBody Produit p) {
+    public Produit modifyProduit(@Valid @RequestBody Produit p) {
         return produitService.updateProduit(p);
     }
 
@@ -44,14 +48,14 @@ public class ProduitController {
         return produitService.retrieveAllProduits().stream().map(produitService::toDTO).collect(Collectors.toList());
     }
 
-
     @GetMapping("/getProduitByStock/{idStock}")
     public List<Produit> getProduitsByStock(@PathVariable Long idStock) {
         return produitService.getProduitsByStock(idStock);
     }
 
     @PutMapping(value = "/assignProduitToStock/{idProduit}/{idStock}")
-    public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock, @RequestParam(required = false, defaultValue = "0") Integer qteInitiale) {
+    public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock,
+            @RequestParam(required = false, defaultValue = "0") Integer qteInitiale) {
         produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
     }
 
@@ -75,14 +79,20 @@ public class ProduitController {
      * detailFacture du produit envoyé en paramètre )
      */
     // http://localhost:8089/SpringMVC/produit/getRevenuBrutProduit/1/{startDate}/{endDate}
-/*	@GetMapping(value = "/getRevenuBrutProduit/{idProduit}/{startDate}/{endDate}")
-	public float getRevenuBrutProduit(@PathVariable("idProduit") Long idProduit,
-			@PathVariable(name = "startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-			@PathVariable(name = "endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate) {
-
-		return produitService.getRevenuBrutProduit(idProduit, startDate, endDate);
-	}*/
-
+    /*
+     * @GetMapping(value =
+     * "/getRevenuBrutProduit/{idProduit}/{startDate}/{endDate}")
+     * public float getRevenuBrutProduit(@PathVariable("idProduit") Long idProduit,
+     * 
+     * @PathVariable(name = "startDate") @DateTimeFormat(iso =
+     * DateTimeFormat.ISO.DATE) Date startDate,
+     * 
+     * @PathVariable(name = "endDate") @DateTimeFormat(iso =
+     * DateTimeFormat.ISO.DATE) Date endDate) {
+     * 
+     * return produitService.getRevenuBrutProduit(idProduit, startDate, endDate);
+     * }
+     */
 
     /*
      * Spring Scheduler : Comparer QteMin tolérée (à ne pa dépasser) avec
@@ -93,11 +103,11 @@ public class ProduitController {
     // http://localhost:8089/SpringMVC/stock/retrieveStatusStock
     // @Scheduled(fixedRate = 60000)
     // @Scheduled(fixedDelay = 60000)
-    //@Scheduled(cron = "*/60 * * * * *")
-    //@GetMapping("/retrieveStatusStock")
-//	@ResponseBody
-//	public void retrieveStatusStock() {
-//		stockService.retrieveStatusStock();
-//	}
+    // @Scheduled(cron = "*/60 * * * * *")
+    // @GetMapping("/retrieveStatusStock")
+    // @ResponseBody
+    // public void retrieveStatusStock() {
+    // stockService.retrieveStatusStock();
+    // }
 
 }
