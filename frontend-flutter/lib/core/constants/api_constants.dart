@@ -19,8 +19,8 @@ class ApiConstants {
   static const String changePassword = '/api/users/me/change-password';
 
   // Admin
-  static const String adminUsers = '/admin/users';
-  static String adminUser(int id) => '/admin/users/$id';
-  static String adminUserStatus(int id) => '/admin/users/$id/status';
-  static const String adminStats = '/admin/stats';
+  static const String adminUsers = '/api/admin/users';
+  static String adminUser(int id) => '/api/admin/users/$id';
+  static String adminUserStatus(int id) => '/api/admin/users/$id/status';
+  static const String adminStats = '/api/admin/stats';
 }

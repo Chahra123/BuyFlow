@@ -42,7 +42,7 @@ public class User implements UserDetails {
     private Role role;
 
     private boolean enabled;
-    
+
     @Builder.Default
     private boolean deleted = false;
 
