@@ -39,7 +39,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _googleLogin() async {
-    final url = Uri.parse('http://localhost:9091/oauth2/authorization/google');
+    final url = Uri.parse('http://127.0.0.1:9091/oauth2/authorization/google');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
