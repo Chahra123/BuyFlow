@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../services/stocks_service.dart';
 import '../core/theme/app_colors.dart';
 
@@ -26,6 +27,16 @@ class _StockMovementPageState extends State<StockMovementPage> {
     });
   }
 
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return "-";
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('dd/MM/yyyy HH:mm').format(date);
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -48,7 +59,16 @@ class _StockMovementPageState extends State<StockMovementPage> {
           }
           final movements = snapshot.data ?? [];
           if (movements.isEmpty) {
-            return const Center(child: Text("Aucun mouvement enregistré"));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   Icon(Icons.history_toggle_off_rounded, size: 64, color: AppColors.textSecondary.withOpacity(0.5)),
+                   const SizedBox(height: 16),
+                   Text("Aucun mouvement enregistré", style: GoogleFonts.outfit(color: AppColors.textSecondary, fontSize: 18)),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
@@ -56,7 +76,9 @@ class _StockMovementPageState extends State<StockMovementPage> {
             itemCount: movements.length,
             itemBuilder: (context, index) {
               final m = movements[index];
-              final isEntree = m['type'] == "ENTREE";
+              // Safety check: if 'type' is missing, assume ENTREE or handle error
+              final typeStr = m['type']?.toString().toUpperCase() ?? 'INCONNU';
+              final isEntree = typeStr == "ENTREE";
               
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -92,10 +114,11 @@ class _StockMovementPageState extends State<StockMovementPage> {
                         children: [
                           Text(m['produit'] != null ? m['produit']['libelleProduit'] : "Produit inconnu", 
                             style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const SizedBox(height: 4),
                           Text(m['raison'] ?? "Pas de raison", 
                             style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                          Text(m['dateMouvement'] ?? "", 
-                            style: TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                          Text(_formatDate(m['dateMouvement']), 
+                            style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                         ],
                       ),
                     ),

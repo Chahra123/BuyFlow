@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../models/reglement.dart';
 import '../services/reglements_service.dart';
+import '../core/theme/app_colors.dart';
 
 class ReglementsPage extends StatefulWidget {
   const ReglementsPage({super.key});
@@ -33,10 +36,10 @@ class _ReglementsPageState extends State<ReglementsPage> {
             Icon(isError ? Icons.error_outline : Icons.check_circle,
                 color: Colors.white),
             const SizedBox(width: 12),
-            Text(message, style: const TextStyle(fontSize: 16)),
+            Text(message, style: GoogleFonts.outfit(fontSize: 16)),
           ],
         ),
-        backgroundColor: isError ? Colors.red.shade600 : const Color(0xFF0074D9),
+        backgroundColor: isError ? AppColors.error : AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -60,10 +63,10 @@ class _ReglementsPageState extends State<ReglementsPage> {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           "Nouveau paiement",
           textAlign: TextAlign.center,
-          style: TextStyle(color: Color(0xFF00509E)),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primary),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -92,6 +95,7 @@ class _ReglementsPageState extends State<ReglementsPage> {
                 decoration: const InputDecoration(
                   labelText: "Date règlement (dd/MM/yyyy)",
                   border: OutlineInputBorder(),
+                  hintText: "Ex: 23/01/2026",
                 ),
               ),
               const SizedBox(height: 16),
@@ -107,8 +111,9 @@ class _ReglementsPageState extends State<ReglementsPage> {
               ValueListenableBuilder<bool>(
                 valueListenable: payeeCtrl,
                 builder: (_, v, __) => SwitchListTile(
-                  title: const Text("Payée ?"),
+                  title: Text("Payée ?", style: GoogleFonts.outfit()),
                   value: v,
+                  activeColor: AppColors.primary,
                   onChanged: (val) => payeeCtrl.value = val,
                 ),
               ),
@@ -118,11 +123,12 @@ class _ReglementsPageState extends State<ReglementsPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Annuler"),
+            child: Text("Annuler", style: GoogleFonts.outfit(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0074D9),
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () async {
               final montantPaye = double.tryParse(montantPayeCtrl.text) ?? 0.0;
@@ -148,13 +154,13 @@ class _ReglementsPageState extends State<ReglementsPage> {
               try {
                 await service.addReglement(newReglement);
                 _showSnackBar("Paiement ajouté avec succès !");
-                Navigator.pop(context);
+                if (mounted) Navigator.pop(context);
                 _refreshReglements();
               } catch (e) {
                 _showSnackBar("Erreur lors de l'ajout", isError: true);
               }
             },
-            child: const Text("Ajouter", style: TextStyle(color: Colors.white)),
+            child: Text("Ajouter", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -164,10 +170,17 @@ class _ReglementsPageState extends State<ReglementsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Paiements")),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF0074D9),
-        child: const Icon(Icons.add, color: Colors.white),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text("Paiements", style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: AppColors.textPrimary,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: AppColors.primary,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: Text("Nouveau Paiement", style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
         onPressed: () => _showReglementDialog(),
       ),
       body: FutureBuilder<List<Reglement>>(
@@ -175,21 +188,31 @@ class _ReglementsPageState extends State<ReglementsPage> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF0074D9)),
+              child: CircularProgressIndicator(color: AppColors.primary),
             );
           }
           if (snapshot.hasError) {
             return Center(
-              child: Text(
-                "Erreur : ${snapshot.error}",
-                style: const TextStyle(color: Colors.red),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                   const SizedBox(height: 16),
+                   Text("Erreur : ${snapshot.error}", style: GoogleFonts.outfit(color: AppColors.error)),
+                ],
               ),
             );
           }
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(
-              child: Text("Aucun paiement",
-                  style: TextStyle(color: Colors.grey, fontSize: 18)),
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   Icon(Icons.payments_outlined, size: 64, color: AppColors.textSecondary.withOpacity(0.5)),
+                   const SizedBox(height: 16),
+                   Text("Aucun paiement", style: GoogleFonts.outfit(fontSize: 18, color: AppColors.textSecondary)),
+                ],
+              ),
             );
           }
 
@@ -199,23 +222,69 @@ class _ReglementsPageState extends State<ReglementsPage> {
             itemCount: list.length,
             itemBuilder: (context, i) {
               final r = list[i];
-              final title = "Payé: ${r.montantPaye} | Restant: ${r.montantRestant}";
-              final subtitle =
-                  "Payée: ${r.payee == true ? "Oui" : "Non"} • Date: ${r.dateReglement ?? "-"}";
+              final isPaid = r.payee == true;
 
-              return Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                child: ListTile(
-                  leading: const Icon(Icons.payments,
-                      size: 36, color: Color(0xFF0074D9)),
-                  title: Text(title,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 16)),
-                  subtitle: Text(subtitle),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: (isPaid ? AppColors.success : AppColors.secondary).withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isPaid ? Icons.check_circle : Icons.pending,
+                        color: isPaid ? AppColors.success : AppColors.secondary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Payé: ${NumberFormat.currency(locale: 'fr_FR', symbol: 'TND').format(r.montantPaye)}",
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Restant: ${NumberFormat.currency(locale: 'fr_FR', symbol: 'TND').format(r.montantRestant)}",
+                            style: GoogleFonts.outfit(fontSize: 14, color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                         Text(
+                            r.dateReglement ?? "-",
+                            style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary),
+                          ),
+                          const SizedBox(height: 4),
+                          if(r.factureId != null)
+                             Container(
+                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                               decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(4)),
+                               child: Text("Facture #${r.factureId}", style: GoogleFonts.outfit(fontSize: 10, color: AppColors.textSecondary)),
+                             ),
+                      ],
+                    ),
+                  ],
                 ),
               );
             },

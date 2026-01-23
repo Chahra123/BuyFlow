@@ -208,25 +208,42 @@ class _ProduitsPageState extends State<ProduitsPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("Mouvement", style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text("Mouvement Stock", style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.primary)),
         content: Form(
           key: _formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
-                value: type,
-                items: const [
-                  DropdownMenuItem(value: "ENTREE", child: Text("Entrée (+)")),
-                  DropdownMenuItem(value: "SORTIE", child: Text("Sortie (-)")),
-                ],
-                onChanged: (v) => type = v!,
-                decoration: const InputDecoration(labelText: "Type"),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButtonFormField<String>(
+                  value: type,
+                  decoration: const InputDecoration(
+                    labelText: "Type de mouvement",
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                    prefixIcon: Icon(Icons.swap_vert_rounded),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: "ENTREE", child: Text("Entrée (+)")),
+                    DropdownMenuItem(value: "SORTIE", child: Text("Sortie (-)")),
+                  ],
+                  onChanged: (v) => type = v!,
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Quantité"),
+                decoration: const InputDecoration(
+                  labelText: "Quantité",
+                  prefixIcon: Icon(Icons.numbers_rounded),
+                  border: OutlineInputBorder(),
+                ),
                 validator: (v) => (v!.isEmpty || int.parse(v) <= 0) ? "Invalide" : null,
                 onSaved: (v) => quantite = int.parse(v!),
               ),
@@ -234,8 +251,15 @@ class _ProduitsPageState extends State<ProduitsPage> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Annuler")),
+          TextButton(
+            onPressed: () => Navigator.pop(context), 
+            child: Text("Annuler", style: GoogleFonts.outfit(color: AppColors.textSecondary))
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
             onPressed: () async {
               if (!_formKey.currentState!.validate()) return;
               _formKey.currentState!.save();
@@ -244,15 +268,16 @@ class _ProduitsPageState extends State<ProduitsPage> {
                   produitId: produit.idProduit!,
                   quantite: quantite,
                   type: type,
+                  utilisateur: "Admin", // Hardcoded for validation safety
                 );
                 _showSnackBar("Stock mis à jour");
                 _refreshProduits();
-                Navigator.pop(context);
+                if (mounted) Navigator.pop(context);
               } catch (e) {
                 _showSnackBar("Erreur: $e", isError: true);
               }
             },
-            child: const Text("Valider"),
+            child: Text("Valider", style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
           ),
         ],
       ),
