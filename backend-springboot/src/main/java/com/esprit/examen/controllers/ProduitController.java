@@ -31,20 +31,19 @@ public class ProduitController {
      * associés
      */
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public Produit addProduit(@Valid @RequestBody Produit p) {
+    public Produit addProduit(@RequestBody Produit p) {
         return produitService.addProduit(p);
     }
 
     @DeleteMapping("/{produit-id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public void removeProduit(@PathVariable("produit-id") Long produitId) {
         produitService.deleteProduit(produitId);
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public Produit modifyProduit(@Valid @RequestBody Produit p) {
+    public Produit modifyProduit(@RequestBody Produit p) {
+        System.out.println(
+                "DEBUG CONTROLLER - categorieProduit = " + p.getCategorieProduit());
         return produitService.updateProduit(p);
     }
 
@@ -64,14 +63,12 @@ public class ProduitController {
     }
 
     @PutMapping(value = "/assignProduitToStock/{idProduit}/{idStock}")
-    @PreAuthorize("hasRole('ADMIN')")
     public void assignProduitToStock(@PathVariable("idProduit") Long idProduit, @PathVariable("idStock") Long idStock,
             @RequestParam(required = false, defaultValue = "0") Integer qteInitiale) {
         produitService.assignProduitToStock(idProduit, idStock, qteInitiale);
     }
 
     @PutMapping("/removeProduitFromStock/{idProduit}")
-    @PreAuthorize("hasRole('ADMIN')")
     public void removeProduitFromStock(@PathVariable Long idProduit) {
         produitService.removeProduitFromStock(idProduit);
     }
@@ -84,15 +81,6 @@ public class ProduitController {
     @GetMapping("/{id}/mouvements")
     public List<MouvementStock> getMouvementsProduit(@PathVariable Long id) {
         return produitService.getMouvementsProduit(id);
-    }
-
-    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Produit> uploadProduitImage(
-            @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) {
-        Produit produit = produitService.uploadImage(id, file);
-        return ResponseEntity.ok(produit);
     }
 
     /*
@@ -130,5 +118,18 @@ public class ProduitController {
     // public void retrieveStatusStock() {
     // stockService.retrieveStatusStock();
     // }
+
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Produit> uploadProduitImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        System.out.println(">>> UPLOAD IMAGE CONTROLLER CALLED");
+        System.out.println(">>> Produit ID = " + id);
+        System.out.println(">>> File name = " + file.getOriginalFilename());
+        System.out.println(">>> File size = " + file.getSize());
+        Produit produit = produitService.uploadImage(id, file);
+        return ResponseEntity.ok(produit);
+    }
 
 }

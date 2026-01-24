@@ -11,5 +11,8 @@ import java.util.List;
 @Repository
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Long> {
     List<CustomerOrder> findByUserOrderByCreatedAtDesc(User user);
+
     List<CustomerOrder> findByAssignedCourierAndStatusInOrderByUpdatedAtDesc(User courier, List<OrderStatus> statuses);
+
+    List<CustomerOrder> findAllByOrderByCreatedAtDesc();
 }

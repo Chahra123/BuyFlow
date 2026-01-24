@@ -32,6 +32,7 @@ class ProduitService {
 
   Future<Produit> updateProduit(Produit produit) async {
     try {
+      print("DEBUG UPDATE PRODUIT JSON => ${produit.toJson()}");
       final response = await _dio.put(
         '/produits',
         data: produit.toJson(),
@@ -144,20 +145,23 @@ class ProduitService {
     required int produitId,
     required XFile image,
   }) async {
-    try {
-      final formData = FormData.fromMap({
-        'file': await MultipartFile.fromFile(
-          image.path,
-          filename: image.name,
-        ),
-      });
+    final fileName = image.path.split('/').last;
 
-      await _dio.post(
-        '/produits/$produitId/image',
-        data: formData,
-      );
-    } catch (e) {
-      throw Exception("Erreur lors de l'upload de l'image: $e");
-    }
+    final formData = FormData.fromMap({
+      'file': await MultipartFile.fromFile(
+        image.path,
+        filename: fileName,
+      ),
+    });
+
+    await _dio.post(
+      '/api/produits/$produitId/image',
+      data: formData,
+      options: Options(
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      ),
+    );
   }
 }

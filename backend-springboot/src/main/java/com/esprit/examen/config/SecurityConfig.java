@@ -50,8 +50,6 @@ public class SecurityConfig {
                         "/webjars/**",
                         "/swagger-ui.html",
                         "/api/users/profile-picture/**",
-                        "/api/orders/*/invoice",
-                        "/api/orders/*/qr",
                         "/api/complaints/*/")
                 .permitAll()
                 .antMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()

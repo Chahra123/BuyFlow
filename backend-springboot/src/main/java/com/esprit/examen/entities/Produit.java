@@ -20,43 +20,63 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Produit implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+
+	// =======================
+	// IDENTITÉ
+	// =======================
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long idProduit;
-	@NotBlank(message = "Le code produit est obligatoire")
-	private String codeProduit;
-	@NotBlank(message = "Le libellé produit est obligatoire")
-	private String libelleProduit;
-	@PositiveOrZero(message = "Le prix ne peut pas être négatif")
-	private float prix;
-	@PositiveOrZero(message = "La quantité minimale ne peut pas être négative")
-	private Integer qteMin;
-	private LocalDate dateCreation;
-	private LocalDate dateDerniereModification;
 
+	// =======================
+	// DONNÉES MÉTIER
+	// =======================
+	private String codeProduit;
+
+	private String libelleProduit;
+
+	private float prix;
+
+	private Integer qteMin;
+
+	// =======================
+	// IMAGE PRODUIT
+	// =======================
 	@Column(name = "image_url")
 	private String imageUrl;
+
+	// =======================
+	// DATES (gérées par le backend)
+	// =======================
+	private LocalDate dateCreation;
+
+	private LocalDate dateDerniereModification;
+
+	// =======================
+	// RELATIONS
+	// =======================
 
 	@ManyToOne
 	@JsonIgnore
 	private Stock stock;
-	@OneToMany(mappedBy = "produit")
-	@JsonIgnore
-	private Set<DetailFacture> detailFacture;
 
 	@ManyToOne
 	@JoinColumn(name = "id_categorie_produit")
 	@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "produits" })
 	private CategorieProduit categorieProduit;
 
-	@OneToMany(mappedBy = "produit", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "produit")
+	@JsonIgnore
+	private Set<DetailFacture> detailFacture;
+
+	@OneToMany(mappedBy = "produit")
 	@JsonIgnore
 	private Set<MouvementStock> mouvements;
 
+	// =======================
+	// LIFECYCLE JPA
+	// =======================
 	@PrePersist
 	private void onCreate() {
 		dateCreation = LocalDate.now();

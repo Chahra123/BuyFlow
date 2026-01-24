@@ -23,7 +23,7 @@ public class InvoiceController {
     @GetMapping(value = "/{id}/invoice", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> invoice(@PathVariable Long id, Principal principal) {
         // Access control is enforced by OrderService
-        CustomerOrder order = orderService.getMyOrder(id);
+        CustomerOrder order = orderService.getMyOrder(id, principal);
         byte[] pdf = invoiceService.generateInvoicePdf(order.getId());
         System.out.println("generation of pdf complete successfully ****");
 
