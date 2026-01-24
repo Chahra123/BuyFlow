@@ -32,3 +32,11 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Flutter generated files
+frontend-flutter/**/generated_plugin_registrant.*
+frontend-flutter/**/generated_plugins.*
+frontend-flutter/**/.plugin_symlinks/
+
+# Spring uploads
+backend-springboot/uploads/

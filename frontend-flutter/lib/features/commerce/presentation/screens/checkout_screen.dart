@@ -6,13 +6,17 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../data/models/order_models.dart';
 import '../../data/services/orders_service.dart';
+import '../../../../services/reglements_service.dart';
+import '../../../../models/reglement.dart';
 import '../providers/cart_provider.dart';
-import '../../../../l10n/app_localizations.dart';
 
 final _ordersServiceProvider = Provider((ref) => OrdersService());
+
+enum PaymentMethod { livraison, carte }
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -24,10 +28,13 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _addressController = TextEditingController();
   final _instructionsController = TextEditingController();
+  final _cardNumberController = TextEditingController();
+
   LatLng _selected = const LatLng(36.8065, 10.1815); // Tunis default
-  String _paymentMethod = 'COD'; // Default to Cash on Delivery
   bool _loading = false;
   String? _error;
+
+  PaymentMethod? _paymentMethod;
 
   Future<void> _reverseGeocode(LatLng p) async {
     try {
@@ -40,8 +47,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           'lon': p.longitude,
         },
         options: Options(headers: {
-          // Nominatim usage policy: set a valid UA
-          'User-Agent': 'BuyFlowFlutter/1.0 (contact: dev@buyflow.local)'
+          'User-Agent': 'BuyFlowFlutter/1.0 (contact: dev@buyflow.local)',
         }),
       );
       final display = res.data['display_name']?.toString();
@@ -59,7 +65,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     final addr = _addressController.text.trim();
     if (addr.isEmpty) {
-      setState(() => _error = AppLocalizations.of(context)!.veuillezSaisirAdresse);
+      setState(() => _error = 'Veuillez saisir une adresse.');
+      return;
+    }
+
+    if (_paymentMethod == PaymentMethod.carte &&
+        _cardNumberController.text.trim().isEmpty) {
+      setState(() => _error = 'Veuillez saisir un numéro de carte.');
       return;
     }
 
@@ -69,24 +81,50 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     });
 
     try {
+      // 1️⃣ Création de la commande (inchangé)
       final req = CreateOrderRequest(
         items: cart.lines
-            .map((l) => OrderItemDto(produitId: l.produit.idProduit ?? 0, quantity: l.quantity))
+            .map((l) => OrderItemDto(
+          produitId: l.produit.idProduit ?? 0,
+          quantity: l.quantity,
+        ))
             .toList(),
         address: OrderAddressDto(
           addressLine: addr,
           lat: _selected.latitude,
           lng: _selected.longitude,
-          instructions: _instructionsController.text.trim().isEmpty ? null : _instructionsController.text.trim(),
+          instructions: _instructionsController.text.trim().isEmpty
+              ? null
+              : _instructionsController.text.trim(),
         ),
-        paymentMethod: _paymentMethod,
       );
-      final order = await ref.read(_ordersServiceProvider).createOrder(req);
+
+      final order =
+      await ref.read(_ordersServiceProvider).createOrder(req);
+
+      // 2️⃣ Paiement automatique UNIQUEMENT si carte
+      if (_paymentMethod == PaymentMethod.carte) {
+        final reglementService = ReglementService();
+
+        await reglementService.addReglement(
+          Reglement(
+            dateReglement:
+            '${DateTime.now().day.toString().padLeft(2, '0')}/'
+                '${DateTime.now().month.toString().padLeft(2, '0')}/'
+                '${DateTime.now().year}',
+            montantPaye: cart.total,
+            montantRestant: 0,
+            payee: true,
+          ),
+        );
+      }
+
+      // 3️⃣ Nettoyage + redirection (inchangé)
       ref.read(cartProvider.notifier).clear();
       if (!mounted) return;
       context.go('/orders/${order.id}');
     } catch (e) {
-      setState(() => _error = '${AppLocalizations.of(context)!.erreurCommande}: $e');
+      setState(() => _error = 'Erreur lors de la commande: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -102,6 +140,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   void dispose() {
     _addressController.dispose();
     _instructionsController.dispose();
+    _cardNumberController.dispose();
     super.dispose();
   }
 
@@ -110,7 +149,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.watch(cartProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.livraisonPaiement)),
+      appBar: AppBar(title: const Text('Livraison & Paiement')),
       body: SafeArea(
         child: Column(
           children: [
@@ -119,24 +158,31 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 options: MapOptions(
                   initialCenter: _selected,
                   initialZoom: 13,
-                  onTap: (tapPosition, point) async {
+                  onTap: (_, point) async {
                     setState(() => _selected = point);
                     await _reverseGeocode(point);
                   },
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate:
+                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'tn.esprit.buy_flow',
                   ),
-                  MarkerLayer(markers: [
-                    Marker(
-                      point: _selected,
-                      width: 40,
-                      height: 40,
-                      child: const Icon(Icons.location_on, size: 40, color: AppColors.primary),
-                    )
-                  ]),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _selected,
+                        width: 40,
+                        height: 40,
+                        child: const Icon(
+                          Icons.location_on,
+                          size: 40,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -146,55 +192,79 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 children: [
                   TextField(
                     controller: _addressController,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.adresseLivraison,
-                      border: const OutlineInputBorder(),
+                    decoration: const InputDecoration(
+                      labelText: 'Adresse de livraison',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _instructionsController,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.instructions,
-                      border: const OutlineInputBorder(),
+                    decoration: const InputDecoration(
+                      labelText: 'Instructions (optionnel)',
+                      border: OutlineInputBorder(),
                     ),
                   ),
+                  const SizedBox(height: 16),
+
+                  // 🔵 Paiement
+                  RadioListTile<PaymentMethod>(
+                    title: const Text('Paiement à la livraison'),
+                    value: PaymentMethod.livraison,
+                    groupValue: _paymentMethod,
+                    onChanged: (v) =>
+                        setState(() => _paymentMethod = v),
+                  ),
+                  RadioListTile<PaymentMethod>(
+                    title: const Text('Paiement par carte'),
+                    value: PaymentMethod.carte,
+                    groupValue: _paymentMethod,
+                    onChanged: (v) =>
+                        setState(() => _paymentMethod = v),
+                  ),
+                  TextField(
+                    controller: _cardNumberController,
+                    enabled: _paymentMethod == PaymentMethod.carte,
+                    decoration: const InputDecoration(
+                      labelText: 'Numéro de carte (fictif)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
                   const SizedBox(height: 12),
                   if (_error != null)
-                    Text(_error!, style: const TextStyle(color: Colors.red)),
-                  const SizedBox(height: 12),
-                  const Align(alignment: Alignment.centerLeft, child: Text("Mode de paiement", style: TextStyle(fontWeight: FontWeight.bold))),
-                  RadioListTile<String>(
-                    title: const Text("Paiement à la livraison"),
-                    value: 'COD',
-                    groupValue: _paymentMethod,
-                    onChanged: (val) => setState(() => _paymentMethod = val!),
-                  ),
-                  RadioListTile<String>(
-                    title: const Text("Paiement en ligne"),
-                    value: 'ONLINE',
-                    groupValue: _paymentMethod,
-                    onChanged: (val) => setState(() => _paymentMethod = val!),
-                  ),
+                    Text(_error!,
+                        style: const TextStyle(color: Colors.red)),
                   const SizedBox(height: 8),
+
                   Row(
                     children: [
                       Expanded(
                         child: Text(
-                          '${AppLocalizations.of(context)!.total}: ${cart.total.toStringAsFixed(2)} ${AppLocalizations.of(context)!.tnd}',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          'Total: ${cart.total.toStringAsFixed(2)} TND',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       FilledButton.icon(
                         onPressed: _loading ? null : _submit,
-                        icon: _loading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check),
-                        label: Text(AppLocalizations.of(context)!.commander),
+                        icon: _loading
+                            ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2),
+                        )
+                            : const Icon(Icons.check),
+                        label: const Text('Commander'),
                       ),
                     ],
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

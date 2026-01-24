@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .authorizeRequests()
                 .antMatchers(
                         "/api/auth/**",
+                        "/uploads/**",
                         "/v2/api-docs",
                         "/v3/api-docs",
                         "/v3/api-docs/**",
@@ -50,6 +51,8 @@ public class SecurityConfig {
                         "/webjars/**",
                         "/swagger-ui.html",
                         "/api/users/profile-picture/**",
+                        "/api/orders/*/invoice",
+                        "/api/orders/*/qr",
                         "/api/complaints/*/")
                 .permitAll()
                 .antMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
@@ -57,6 +60,7 @@ public class SecurityConfig {
                 .antMatchers("/api/admin/**").hasRole("ADMIN")
                 .antMatchers("/api/stocks/**").hasRole("ADMIN")
                 .antMatchers("/api/mouvements/**").hasRole("ADMIN")
+                .antMatchers("/api/favorites/**").hasRole("USER")
                 .antMatchers("/api/fournisseurs/**", "/api/fournisseur/**",
                         "/api/assignSecteurActiviteToFournisseur/**")
                 .hasRole("ADMIN")
