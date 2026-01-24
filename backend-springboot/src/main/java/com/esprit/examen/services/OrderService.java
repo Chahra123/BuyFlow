@@ -85,6 +85,8 @@ public class OrderService {
                 .deliveryToken(UUID.randomUUID().toString().replace("-", ""))
                 .status(OrderStatus.CONFIRMED)
                 .paymentStatus(PaymentStatus.UNPAID)
+                .paymentMethod(request.getPaymentMethod() != null ? PaymentMethod.valueOf(request.getPaymentMethod())
+                        : PaymentMethod.COD)
                 .shippingFee(BigDecimal.ZERO)
                 .build();
 

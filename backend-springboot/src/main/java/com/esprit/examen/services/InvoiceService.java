@@ -43,9 +43,11 @@ public class InvoiceService {
             document.add(new Paragraph("Invoice", titleFont));
             document.add(new Paragraph("Order #" + order.getId(), normal));
             if (order.getCreatedAt() != null) {
-                document.add(new Paragraph("Date: " + order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), normal));
+                document.add(new Paragraph(
+                        "Date: " + order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), normal));
             }
-            document.add(new Paragraph("Customer: " + order.getUser().getFirstName() + " " + order.getUser().getLastName() + " (" + order.getUser().getEmail() + ")", normal));
+            document.add(new Paragraph("Customer: " + order.getUser().getFirstName() + " "
+                    + order.getUser().getLastName() + " (" + order.getUser().getEmail() + ")", normal));
             document.add(new Paragraph("Delivery address: " + order.getDeliveryAddress(), normal));
             document.add(Chunk.NEWLINE);
 
@@ -86,8 +88,9 @@ public class InvoiceService {
     }
 
     private String toMoney(BigDecimal v) {
-        if (v == null) return "0.000";
-        return v.setScale(3, BigDecimal.ROUND_HALF_UP).toPlainString();
+        if (v == null)
+            return "0.000";
+        return v.setScale(3, java.math.RoundingMode.HALF_UP).toPlainString();
     }
 
     private Image generateQrImage(String text) {

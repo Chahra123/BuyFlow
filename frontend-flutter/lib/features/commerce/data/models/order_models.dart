@@ -105,10 +105,12 @@ class CustomerOrderDto {
 class CreateOrderRequest {
   final List<OrderItemDto> items;
   final OrderAddressDto address;
+  final String paymentMethod; // 'COD' or 'ONLINE'
 
   const CreateOrderRequest({
     required this.items,
     required this.address,
+    this.paymentMethod = 'COD',
   });
 
   Map<String, dynamic> toJson() {
@@ -118,6 +120,7 @@ class CreateOrderRequest {
       'deliveryLat': address.lat,
       'deliveryLng': address.lng,
       'deliveryInstructions': address.instructions,
+      'paymentMethod': paymentMethod,
     };
   }
 }
