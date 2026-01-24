@@ -1,5 +1,6 @@
 import '../../../auth/domain/entities/user.dart';
 import '../entities/admin_stats.dart';
+import '../../../commerce/data/models/order_models.dart';
 
 abstract class AdminRepository {
   Future<List<User>> getUsers({String query = '', int page = 0, int size = 10});
@@ -23,4 +24,6 @@ abstract class AdminRepository {
   });
   Future<void> toggleUserStatus(int id, bool enabled);
   Future<AdminStats> getStats();
+  Future<List<CustomerOrderDto>> getOrders();
+  Future<void> assignCourier(int orderId, int courierId);
 }

@@ -10,6 +10,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../data/models/order_models.dart';
 import '../../data/services/orders_service.dart';
 import '../providers/cart_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 final _ordersServiceProvider = Provider((ref) => OrdersService());
 
@@ -57,7 +58,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     final addr = _addressController.text.trim();
     if (addr.isEmpty) {
-      setState(() => _error = 'Veuillez saisir une adresse.');
+      setState(() => _error = AppLocalizations.of(context)!.veuillezSaisirAdresse);
       return;
     }
 
@@ -83,7 +84,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       if (!mounted) return;
       context.go('/orders/${order.id}');
     } catch (e) {
-      setState(() => _error = 'Erreur lors de la commande: $e');
+      setState(() => _error = '${AppLocalizations.of(context)!.erreurCommande}: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -107,7 +108,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.watch(cartProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Livraison & Paiement')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.livraisonPaiement)),
       body: SafeArea(
         child: Column(
           children: [
@@ -143,17 +144,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 children: [
                   TextField(
                     controller: _addressController,
-                    decoration: const InputDecoration(
-                      labelText: 'Adresse de livraison',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.adresseLivraison,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
                   TextField(
                     controller: _instructionsController,
-                    decoration: const InputDecoration(
-                      labelText: 'Instructions (optionnel)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.instructions,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -164,14 +165,14 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Total: ${cart.total.toStringAsFixed(2)} TND',
+                          '${AppLocalizations.of(context)!.total}: ${cart.total.toStringAsFixed(2)} ${AppLocalizations.of(context)!.tnd}',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                       FilledButton.icon(
                         onPressed: _loading ? null : _submit,
                         icon: _loading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.check),
-                        label: const Text('Commander'),
+                        label: Text(AppLocalizations.of(context)!.commander),
                       ),
                     ],
                   ),

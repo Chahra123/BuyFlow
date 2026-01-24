@@ -23,4 +23,6 @@ class ApiConstants {
   static String adminUser(int id) => '/api/admin/users/$id';
   static String adminUserStatus(int id) => '/api/admin/users/$id/status';
   static const String adminStats = '/api/admin/stats';
+  static const String adminOrders = '/api/admin/orders';
+  static String adminAssignOrder(int id) => '/api/admin/orders/$id/assign';
 }

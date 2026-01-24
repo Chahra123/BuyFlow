@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../services/stocks_service.dart';
 import '../models/stock_stats.dart';
 import '../core/theme/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 class StockDashboardScreen extends StatefulWidget {
   const StockDashboardScreen({super.key});
@@ -33,7 +34,7 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text("Dashboard Stock", 
+        title: Text(AppLocalizations.of(context)!.stockDashboard, 
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 24)),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -42,7 +43,7 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
           IconButton(
             onPressed: _loadStats,
             icon: const Icon(Icons.refresh_rounded),
-            tooltip: "Actualiser",
+            tooltip: AppLocalizations.of(context)!.actualiser,
           ),
         ],
       ),
@@ -59,13 +60,13 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
                 children: [
                   const Icon(Icons.error_outline_rounded, size: 64, color: AppColors.error),
                   const SizedBox(height: 16),
-                  Text("Erreur: ${snapshot.error}", style: GoogleFonts.outfit(color: AppColors.textSecondary)),
-                  TextButton(onPressed: _loadStats, child: const Text("Réessayer"))
+                  Text("${AppLocalizations.of(context)!.errorGeneric}: ${snapshot.error}", style: GoogleFonts.outfit(color: AppColors.textSecondary)),
+                  TextButton(onPressed: _loadStats, child: Text(AppLocalizations.of(context)!.actualiser))
                 ],
               ),
             );
           }
-          if (!snapshot.hasData) return const Center(child: Text("Pas de données disponibles"));
+          if (!snapshot.hasData) return Center(child: Text(AppLocalizations.of(context)!.pasDonnees));
 
           final stats = snapshot.data!;
           return SingleChildScrollView(
@@ -79,7 +80,7 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Analyse de Santé", 
+                    Text(AppLocalizations.of(context)!.analyseSante, 
                       style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                     Container(
                       padding: const EdgeInsets.all(8),
@@ -91,7 +92,7 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
                 const SizedBox(height: 20),
                 _buildHealthAnalysis(stats),
                 const SizedBox(height: 32),
-                Text("Dernières Activités", 
+                Text(AppLocalizations.of(context)!.dernieresActivites, 
                   style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                 const SizedBox(height: 16),
                 _buildRecentMovements(stats.recentMovements),
@@ -114,33 +115,33 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
       childAspectRatio: 1.3,
       children: [
         _buildStatCard(
-          "Total Stocks", 
+          AppLocalizations.of(context)!.totalStocks, 
           stats.totalStocks.toString(), 
           Icons.inventory_2_rounded, 
           AppColors.primary,
-          "Entrepôts gérés"
+          AppLocalizations.of(context)!.entrepotsGeres
         ),
         _buildStatCard(
-          "Produits", 
+          AppLocalizations.of(context)!.produits, 
           stats.totalProducts.toString(), 
           Icons.shopping_bag_rounded, 
           AppColors.secondary,
-          "Articles catalogue"
+          AppLocalizations.of(context)!.articlesCatalogue
         ),
         _buildStatCard(
-          "Alertes Bas", 
+          AppLocalizations.of(context)!.alertesBas, 
           stats.lowStockCount.toString(), 
           Icons.warning_amber_rounded, 
           AppColors.error,
-          "À réapprovisionner",
+          AppLocalizations.of(context)!.aReapprovisionner,
           isUrgent: stats.lowStockCount > 0
         ),
         _buildStatCard(
-          "Taux de Santé", 
+          AppLocalizations.of(context)!.tauxSante, 
           "${stats.totalStocks > 0 ? ((1 - stats.lowStockCount / stats.totalStocks) * 100).toInt() : 100}%", 
           Icons.health_and_safety_rounded, 
           AppColors.success,
-          "Disponibilité globale"
+          AppLocalizations.of(context)!.disponibiliteGlobale
         ),
       ],
     );
@@ -239,11 +240,11 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLegendItem("Optimal", AppColors.success, stats.totalStocks - stats.lowStockCount),
+                _buildLegendItem(AppLocalizations.of(context)!.optimal, AppColors.success, stats.totalStocks - stats.lowStockCount),
                 const SizedBox(height: 12),
-                _buildLegendItem("Alerte", AppColors.error, stats.lowStockCount),
+                _buildLegendItem(AppLocalizations.of(context)!.alerte, AppColors.error, stats.lowStockCount),
                 const Divider(height: 32),
-                Text("États des stocks", style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
+                Text(AppLocalizations.of(context)!.etatsStocks, style: GoogleFonts.outfit(fontSize: 12, color: AppColors.textSecondary)),
               ],
             ),
           ),
@@ -265,7 +266,7 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label, style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w600)),
-            Text("$count stocks", style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textSecondary)),
+            Text("${count} stocks", style: GoogleFonts.outfit(fontSize: 11, color: AppColors.textSecondary)),
           ],
         )
       ],
@@ -282,7 +283,7 @@ class _StockDashboardScreenState extends State<StockDashboardScreen> {
             children: [
               Icon(Icons.history_rounded, size: 48, color: AppColors.textSecondary.withOpacity(0.3)),
               const SizedBox(height: 12),
-              Text("Aucun mouvement récent", style: GoogleFonts.outfit(color: AppColors.textSecondary)),
+              Text(AppLocalizations.of(context)!.aucunMouvement, style: GoogleFonts.outfit(color: AppColors.textSecondary)),
             ],
           ),
         ),

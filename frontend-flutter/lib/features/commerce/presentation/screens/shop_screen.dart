@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../l10n/app_localizations.dart';
 
 import '../../../../models/produit.dart';
 import '../../../../models/categorie_produit.dart';
@@ -57,7 +58,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Boutique'),
+        title: Text(AppLocalizations.of(context)!.boutique),
         actions: [
           Consumer(
             builder: (context, ref, _) {
@@ -78,10 +79,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Rechercher un produit...',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                prefixIcon: const Icon(Icons.search),
+                hintText: AppLocalizations.of(context)!.rechercherProduit,
+                border: const OutlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {
@@ -112,11 +113,11 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: FilterChip(
-                        label: const Row(
+                        label: Row(
                           children: [
-                            Icon(Icons.favorite, size: 16),
-                            SizedBox(width: 4),
-                            Text('Favoris'),
+                            const Icon(Icons.favorite, size: 16),
+                            const SizedBox(width: 4),
+                            Text(AppLocalizations.of(context)!.favoris),
                           ],
                         ),
                         selected: showFavoritesOnly,
@@ -197,8 +198,8 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                 }).toList();
 
                 if (produits.isEmpty) {
-                  return const Center(
-                    child: Text('Aucun produit trouvé'),
+                  return Center(
+                    child: Text(AppLocalizations.of(context)!.aucunProduit),
                   );
                 }
 

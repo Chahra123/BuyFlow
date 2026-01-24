@@ -35,7 +35,7 @@ class _ScanQrScreenState extends ConsumerState<ScanQrScreen> {
           try {
             await service.scanAndDeliver(orderId: widget.orderId, qrData: value);
             if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Commande livrée ✅')));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Commande livrée et payée ✅')));
             context.pop();
           } catch (e) {
             if (!mounted) return;

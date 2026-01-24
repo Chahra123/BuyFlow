@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/admin_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -26,7 +27,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: Text(AppLocalizations.of(context)!.adminDashboard),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -44,18 +45,23 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
+              title: Text(AppLocalizations.of(context)!.dashboard),
               onTap: () => context.go('/admin/dashboard'),
             ),
             ListTile(
               leading: const Icon(Icons.people),
-              title: const Text('Utilisateurs'),
+              title: Text(AppLocalizations.of(context)!.users),
               onTap: () => context.go('/admin/users'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.shopping_bag),
+              title: Text(AppLocalizations.of(context)!.mesCommandes),
+              onTap: () => context.go('/admin/orders'),
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.arrow_back),
-              title: const Text('Retour à l\'App'),
+              title: Text(AppLocalizations.of(context)!.retourApp),
               onTap: () => context.go('/'),
             ),
           ],
@@ -70,8 +76,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Aperçu de l\'Activité',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.apercuActivite,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     GridView.count(
                       crossAxisCount: 2,
@@ -82,25 +88,25 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       childAspectRatio: 1.3,
                       children: [
                         _buildStatCard(
-                          'Total Utilisateurs',
+                          AppLocalizations.of(context)!.totalUtilisateurs,
                           '${stats?.totalUsers ?? 0}',
                           Icons.people,
                           Colors.blue,
                         ),
                         _buildStatCard(
-                          'Comptes Actifs',
+                          AppLocalizations.of(context)!.comptesActifs,
                           '${stats?.enabledUsers ?? 0}',
                           Icons.check_circle,
                           Colors.green,
                         ),
                         _buildStatCard(
-                          'Administrateurs',
+                          AppLocalizations.of(context)!.administrateurs,
                           '${stats?.adminUsers ?? 0}',
                           Icons.security,
                           Colors.orange,
                         ),
                         _buildStatCard(
-                          'Nouveaux (24h)',
+                          AppLocalizations.of(context)!.nouveaux24h,
                           '${stats?.newUsersLast24h ?? 0}',
                           Icons.person_add,
                           Colors.purple,
@@ -108,17 +114,27 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                       ],
                     ),
                     const SizedBox(height: 24),
-                    const Text('Actions Rapides',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.actionsRapides,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     ListTile(
                       tileColor: Colors.blue.withOpacity(0.05),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       leading: const CircleAvatar(backgroundColor: Colors.blue, child: Icon(Icons.person_add, color: Colors.white)),
-                      title: const Text('Créer un utilisateur'),
-                      subtitle: const Text('Ajouter manuellement un compte'),
+                      title: Text(AppLocalizations.of(context)!.creerUtilisateur),
+                      subtitle: Text(AppLocalizations.of(context)!.ajouterManuellement),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () => context.push('/admin/users'), // Or dedicated create screen
+                      onTap: () => context.push('/admin/users'),
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      tileColor: Colors.orange.withOpacity(0.05),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      leading: const CircleAvatar(backgroundColor: Colors.orange, child: Icon(Icons.shopping_bag, color: Colors.white)),
+                      title: Text(AppLocalizations.of(context)!.gererCommandes),
+                      subtitle: Text(AppLocalizations.of(context)!.voirAssignerLivreurs),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => context.push('/admin/orders'),
                     ),
                   ],
                 ),

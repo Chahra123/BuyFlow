@@ -106,7 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          "Welcome Back!",
+                          l10n.welcomeBack,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
                             fontSize: 32,
@@ -116,7 +116,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "Connectez-vous pour accéder à votre espace.",
+                          l10n.loginSubtitle,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
                         ),
@@ -150,7 +150,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               },
                             ),
                           ),
-                          validator: (v) => v!.isEmpty ? "Requis" : null,
+                          validator: (v) => v!.isEmpty ? l10n.fieldRequired : null,
                           onFieldSubmitted: (_) => _login(),
                         ),
                         Align(
@@ -170,21 +170,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         else
                           ElevatedButton(
                             onPressed: _login,
-                            child: const Text("Se connecter"),
+                            child: Text(l10n.login),
                           ),
                         
                         const SizedBox(height: 24),
-                        const Row(children: [
-                          Expanded(child: Divider()),
-                          Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text("OU")),
-                          Expanded(child: Divider()),
+                        Row(children: [
+                          const Expanded(child: Divider()),
+                          Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(l10n.ou)),
+                          const Expanded(child: Divider()),
                         ]),
                         const SizedBox(height: 24),
 
                         OutlinedButton.icon(
                           onPressed: _googleLogin,
                           icon: const Icon(Icons.g_mobiledata, size: 28),
-                          label: const Text("Continuer avec Google"),
+                          label: Text(l10n.continuerAvecGoogle),
                         ),
 
                         const SizedBox(height: 32),
@@ -192,10 +192,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           alignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Text("Pas encore de compte ?", style: TextStyle(color: AppColors.textSecondary)),
+                            Text(l10n.noAccount, style: TextStyle(color: AppColors.textSecondary)),
                             TextButton(
                               onPressed: () => context.push('/register'),
-                              child: const Text("Créer un compte", style: TextStyle(fontWeight: FontWeight.bold)),
+                              child: Text(l10n.createAccount, style: const TextStyle(fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),

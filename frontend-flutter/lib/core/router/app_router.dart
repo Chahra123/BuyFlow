@@ -14,6 +14,7 @@ import '../../features/admin/presentation/screens/user_list_screen.dart';
 import '../../features/admin/presentation/screens/user_details_screen.dart';
 import '../../features/admin/presentation/screens/admin_create_user_screen.dart';
 import '../../features/admin/presentation/screens/admin_edit_user_screen.dart';
+import '../../features/admin/presentation/screens/admin_order_list_screen.dart';
 import '../../features/auth/domain/entities/user.dart';
 import '../../features/auth/presentation/screens/verify_email_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
@@ -179,6 +180,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => UserDetailsScreen(userId: state.pathParameters['id']!),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/admin/orders',
+        builder: (context, state) => const AdminOrderListScreen(),
       ),
       // Main App Shell
       StatefulShellRoute.indexedStack(
