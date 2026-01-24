@@ -85,4 +85,26 @@ public class DeliveryService {
         }
         return orderRepository.save(order);
     }
+
+    @Transactional
+    public CustomerOrder validateDelivery(Long orderId, Principal principal) {
+        User courier = getCourier(principal);
+        CustomerOrder order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        if (order.getAssignedCourier() == null || !order.getAssignedCourier().getId().equals(courier.getId())) {
+            throw new org.springframework.security.access.AccessDeniedException("Not assigned to you");
+        }
+
+        // Allow validation if it's already out for delivery or just assigned
+        if (order.getStatus() != OrderStatus.OUT_FOR_DELIVERY && order.getStatus() != OrderStatus.ASSIGNED) {
+            throw new BadRequestException("Order not in deliverable status");
+        }
+
+        order.setStatus(OrderStatus.DELIVERED);
+        if (order.getPaymentStatus() == PaymentStatus.UNPAID) {
+            order.setPaymentStatus(PaymentStatus.PAID);
+        }
+        return orderRepository.save(order);
+    }
 }

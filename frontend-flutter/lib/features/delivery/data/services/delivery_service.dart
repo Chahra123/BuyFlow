@@ -19,4 +19,8 @@ class DeliveryService {
   Future<void> scanAndDeliver({required int orderId, required String qrData}) async {
     await _dio.post('/api/delivery/orders/$orderId/scan', data: {'qrData': qrData});
   }
+
+  Future<void> validateDelivery(int orderId) async {
+    await _dio.post('/api/delivery/orders/$orderId/validate');
+  }
 }

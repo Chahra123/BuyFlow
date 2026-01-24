@@ -34,4 +34,9 @@ public class DeliveryController {
     public CustomerOrder scan(@PathVariable Long id, @Valid @RequestBody ScanQrRequest request, Principal principal) {
         return deliveryService.scanAndDeliver(id, request, principal);
     }
+
+    @PostMapping("/{id}/validate")
+    public CustomerOrder validate(@PathVariable Long id, Principal principal) {
+        return deliveryService.validateDelivery(id, principal);
+    }
 }
