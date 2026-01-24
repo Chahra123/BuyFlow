@@ -32,6 +32,9 @@ public class CustomerOrder {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
     /**
      * Delivery address in free text.
      */
@@ -68,8 +71,10 @@ public class CustomerOrder {
 
     @PrePersist
     void onCreate() {
-        if (status == null) status = OrderStatus.PLACED;
-        if (paymentStatus == null) paymentStatus = PaymentStatus.UNPAID;
+        if (status == null)
+            status = OrderStatus.PLACED;
+        if (paymentStatus == null)
+            paymentStatus = PaymentStatus.UNPAID;
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
     }

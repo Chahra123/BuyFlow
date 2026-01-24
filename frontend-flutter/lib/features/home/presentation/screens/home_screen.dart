@@ -23,8 +23,10 @@ class HomeScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildHeader(),
-              const SizedBox(height: 32),
-              _buildStats(context),
+              if (!isCourier) ...[
+                const SizedBox(height: 32),
+                _buildStats(context),
+              ],
               const SizedBox(height: 32),
               Text(
                 "Accès Rapide",
@@ -127,24 +129,26 @@ class HomeScreen extends ConsumerWidget {
       mainAxisSpacing: 16,
       childAspectRatio: 1.1,
       children: [
-        _DashboardCard(
-          title: "Boutique",
-          icon: Icons.storefront_outlined,
-          color: Colors.teal,
-          onTap: () => context.go('/shop'),
-        ),
-        _DashboardCard(
-          title: "Commandes",
-          icon: Icons.receipt_long_outlined,
-          color: Colors.indigo,
-          onTap: () => context.go('/orders'),
-        ),
-        _DashboardCard(
-          title: "Réclamations",
-          icon: Icons.chat_bubble_outline,
-          color: Colors.redAccent,
-          onTap: () => context.push('/complaints'),
-        ),
+        if (!isCourier) ...[
+          _DashboardCard(
+            title: "Boutique",
+            icon: Icons.storefront_outlined,
+            color: Colors.teal,
+            onTap: () => context.go('/shop'),
+          ),
+          _DashboardCard(
+            title: "Commandes",
+            icon: Icons.receipt_long_outlined,
+            color: Colors.indigo,
+            onTap: () => context.go('/orders'),
+          ),
+          _DashboardCard(
+            title: "Réclamations",
+            icon: Icons.chat_bubble_outline,
+            color: Colors.redAccent,
+            onTap: () => context.push('/complaints'),
+          ),
+        ],
         if (isCourier)
           _DashboardCard(
             title: "Livraisons",

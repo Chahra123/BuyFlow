@@ -25,6 +25,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _addressController = TextEditingController();
   final _instructionsController = TextEditingController();
   LatLng _selected = const LatLng(36.8065, 10.1815); // Tunis default
+  String _paymentMethod = 'COD'; // Default to Cash on Delivery
   bool _loading = false;
   String? _error;
 
@@ -78,6 +79,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           lng: _selected.longitude,
           instructions: _instructionsController.text.trim().isEmpty ? null : _instructionsController.text.trim(),
         ),
+        paymentMethod: _paymentMethod,
       );
       final order = await ref.read(_ordersServiceProvider).createOrder(req);
       ref.read(cartProvider.notifier).clear();
@@ -160,6 +162,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   const SizedBox(height: 12),
                   if (_error != null)
                     Text(_error!, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 12),
+                  const Align(alignment: Alignment.centerLeft, child: Text("Mode de paiement", style: TextStyle(fontWeight: FontWeight.bold))),
+                  RadioListTile<String>(
+                    title: const Text("Paiement à la livraison"),
+                    value: 'COD',
+                    groupValue: _paymentMethod,
+                    onChanged: (val) => setState(() => _paymentMethod = val!),
+                  ),
+                  RadioListTile<String>(
+                    title: const Text("Paiement en ligne"),
+                    value: 'ONLINE',
+                    groupValue: _paymentMethod,
+                    onChanged: (val) => setState(() => _paymentMethod = val!),
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
