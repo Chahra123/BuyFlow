@@ -25,7 +25,6 @@ public class OrderService {
     private final UserRepository userRepository;
     private final ProduitRepository produitRepository;
     private final MouvementStockRepository mouvementStockRepository;
-    private final IMouvementStockService mouvementStockService;
 
     private User getConnectedUser(Principal principal) {
         if (principal == null)
@@ -36,6 +35,14 @@ public class OrderService {
 
     public List<CustomerOrder> myOrders(Principal principal) {
         User user = getConnectedUser(principal);
+        if (user.getRole() == Role.ADMIN) {
+            return orderRepository.findAllByOrderByCreatedAtDesc();
+        }
+        if (user.getRole() == Role.LIVREUR) {
+            return orderRepository.findByAssignedCourierAndStatusInOrderByUpdatedAtDesc(
+                    user,
+                    List.of(OrderStatus.ASSIGNED, OrderStatus.OUT_FOR_DELIVERY, OrderStatus.DELIVERED));
+        }
         return orderRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
@@ -43,7 +50,13 @@ public class OrderService {
         User user = getConnectedUser(principal);
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
-        if (!order.getUser().getId().equals(user.getId()) && user.getRole() != Role.ADMIN) {
+
+        boolean isOwner = order.getUser().getId().equals(user.getId());
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isAssignedCourier = order.getAssignedCourier() != null
+                && order.getAssignedCourier().getId().equals(user.getId());
+
+        if (!isOwner && !isAdmin && !isAssignedCourier) {
             throw new org.springframework.security.access.AccessDeniedException("Not allowed");
         }
         return order;
@@ -107,12 +120,13 @@ public class OrderService {
             subtotal = subtotal.add(lineTotal);
 
             // Stock decrement at validation (your rule)
-            mouvementStockService.effectuerMouvement(
-                    produit.getIdProduit(),
-                    itemReq.getQuantity(),
-                    TypeMouvement.SORTIE,
-                    "ORDER_CONFIRMED:" + UUID.randomUUID(),
-                    user.getEmail());
+            MouvementStock m = new MouvementStock();
+            m.setProduit(produit);
+            m.setQuantite(itemReq.getQuantity());
+            m.setType(TypeMouvement.SORTIE);
+            m.setRaison("ORDER_CONFIRMED:" + UUID.randomUUID());
+            m.setUtilisateur(user.getEmail());
+            mouvementStockRepository.save(m);
         }
 
         order.setSubtotal(subtotal);
@@ -143,12 +157,13 @@ public class OrderService {
 
         // Restock
         for (CustomerOrderItem item : order.getItems()) {
-            mouvementStockService.effectuerMouvement(
-                    item.getProduit().getIdProduit(),
-                    item.getQuantity(),
-                    TypeMouvement.ENTREE,
-                    "ORDER_CANCELLED:" + order.getId(),
-                    user.getEmail());
+            MouvementStock m = new MouvementStock();
+            m.setProduit(item.getProduit());
+            m.setQuantite(item.getQuantity());
+            m.setType(TypeMouvement.ENTREE);
+            m.setRaison("ORDER_CANCELLED:" + order.getId());
+            m.setUtilisateur(user.getEmail());
+            mouvementStockRepository.save(m);
         }
 
         order.setStatus(OrderStatus.CANCELLED);

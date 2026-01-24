@@ -46,12 +46,6 @@ public class ProduitServiceImpl implements IProduitService {
     @Autowired
     MouvementStockServiceImpl mouvementStockService;
 
-    @Autowired
-    CustomerOrderItemRepository orderItemRepository;
-
-    @Autowired
-    DetailFactureRepository detailFactureRepository;
-
     @Override
     public List<Produit> retrieveAllProduits() {
         List<Produit> produits = (List<Produit>) produitRepository.findAll();
@@ -63,6 +57,7 @@ public class ProduitServiceImpl implements IProduitService {
 
     @Transactional
     public Produit addProduit(Produit p) {
+
         if (p.getCategorieProduit() != null && p.getCategorieProduit().getIdCategorieProduit() != null) {
             CategorieProduit categorie = categorieProduitRepository
                     .findById(p.getCategorieProduit().getIdCategorieProduit())
@@ -70,6 +65,7 @@ public class ProduitServiceImpl implements IProduitService {
 
             p.setCategorieProduit(categorie);
         }
+
         produitRepository.save(p);
         return p;
     }
@@ -85,25 +81,15 @@ public class ProduitServiceImpl implements IProduitService {
         Produit produit = produitRepository.findById(idProduit)
                 .orElseThrow(() -> new RuntimeException("Produit non trouvé"));
 
-        // Check if product is in current stock
-        int quantiteActuelle = getQuantiteProduit(idProduit);
+        int quantiteActuelle = produit.getMouvements().stream()
+                .mapToInt(m -> m.getType() == TypeMouvement.ENTREE ? m.getQuantite() : -m.getQuantite()).sum();
+
         if (quantiteActuelle > 0) {
             throw new RuntimeException(
                     "Impossible de supprimer un produit dont la quantité actuelle dans le stock est > 0");
         }
 
-        // Check if product is linked to orders (historical/active)
-        if (orderItemRepository.existsByProduit_IdProduit(idProduit)) {
-            throw new RuntimeException("Impossible de supprimer un produit référencé dans des commandes clients");
-        }
-
-        // Check if product is linked to supplier invoices
-        if (detailFactureRepository.existsByProduit_IdProduit(idProduit)) {
-            throw new RuntimeException("Impossible de supprimer un produit référencé dans des factures");
-        }
-
-        // If we reach here, movements will be deleted by orphanRemoval or manual delete
-        // if not configured
+        // Supprimer tous les mouvements associés
         mouvementStockRepository.deleteAll(produit.getMouvements());
 
         produitRepository.delete(produit);
@@ -112,6 +98,7 @@ public class ProduitServiceImpl implements IProduitService {
     @Override
     @Transactional
     public Produit updateProduit(Produit p) {
+
         Produit existing = produitRepository.findById(p.getIdProduit())
                 .orElseThrow(() -> new RuntimeException("Produit introuvable"));
 
@@ -158,13 +145,18 @@ public class ProduitServiceImpl implements IProduitService {
 
     @Override
     public ProduitDTO toDTO(Produit p) {
-        return new ProduitDTO(p.getIdProduit(), p.getCodeProduit(), p.getLibelleProduit(), p.getPrix(),
+        return new ProduitDTO(
+                p.getIdProduit(),
+                p.getCodeProduit(),
+                p.getLibelleProduit(),
+                p.getPrix(),
                 p.getDateCreation() != null ? p.getDateCreation().toString() : null,
                 p.getDateDerniereModification() != null ? p.getDateDerniereModification().toString() : null,
                 p.getStock() != null ? p.getStock().getIdStock() : null,
                 p.getStock() != null ? p.getStock().getLibelleStock() : null,
                 p.getCategorieProduit() != null ? p.getCategorieProduit().getIdCategorieProduit() : null,
                 p.getCategorieProduit() != null ? p.getCategorieProduit().getLibelleCategorie() : null);
+
     }
 
     public void removeProduitFromStock(Long idProduit) {
