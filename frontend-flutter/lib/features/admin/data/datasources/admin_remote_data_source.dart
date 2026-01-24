@@ -3,6 +3,7 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../auth/data/models/user_model.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../domain/entities/admin_stats.dart';
+import '../../../commerce/data/models/order_models.dart';
 
 abstract class AdminRemoteDataSource {
   Future<List<User>> getUsers({String query = '', int page = 0, int size = 10});
@@ -26,6 +27,8 @@ abstract class AdminRemoteDataSource {
   });
   Future<void> toggleUserStatus(int id, bool enabled);
   Future<AdminStats> getStats();
+  Future<List<CustomerOrderDto>> getOrders();
+  Future<void> assignCourier(int orderId, int courierId);
 }
 
 class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
@@ -104,5 +107,16 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   Future<AdminStats> getStats() async {
     final response = await dio.get(ApiConstants.adminStats);
     return AdminStats.fromJson(response.data);
+  }
+
+  @override
+  Future<List<CustomerOrderDto>> getOrders() async {
+    final response = await dio.get(ApiConstants.adminOrders);
+    return (response.data as List).map((e) => CustomerOrderDto.fromJson(e)).toList();
+  }
+
+  @override
+  Future<void> assignCourier(int orderId, int courierId) async {
+    await dio.post(ApiConstants.adminAssignOrder(orderId), data: {'courierUserId': courierId});
   }
 }

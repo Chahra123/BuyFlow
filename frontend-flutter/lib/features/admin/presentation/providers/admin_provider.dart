@@ -56,10 +56,14 @@ class AdminNotifier extends Notifier<AdminState> {
     return const AdminState();
   }
 
-  Future<void> loadUsers({String query = ''}) async {
+  Future<void> loadUsers({String query = '', int page = 0, int size = 10}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final users = await ref.read(adminRepositoryProvider).getUsers(query: query);
+      final users = await ref.read(adminRepositoryProvider).getUsers(
+        query: query,
+        page: page,
+        size: size,
+      );
       state = state.copyWith(isLoading: false, users: users);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

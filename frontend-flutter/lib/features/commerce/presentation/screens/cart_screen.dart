@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/cart_provider.dart';
+import '../../../../l10n/app_localizations.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
@@ -12,9 +13,9 @@ class CartScreen extends ConsumerWidget {
     final notifier = ref.read(cartProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Panier')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.panier)),
       body: cart.lines.isEmpty
-          ? const Center(child: Text('Votre panier est vide'))
+          ? Center(child: Text(AppLocalizations.of(context)!.panierVide))
           : ListView.separated(
               padding: const EdgeInsets.all(16),
               itemBuilder: (context, idx) {
@@ -52,7 +53,7 @@ class CartScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Total: ${cart.total.toStringAsFixed(2)} TND',
+                  '${AppLocalizations.of(context)!.total}: ${cart.total.toStringAsFixed(2)} ${AppLocalizations.of(context)!.tnd}',
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),

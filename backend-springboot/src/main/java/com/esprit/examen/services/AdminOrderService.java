@@ -47,4 +47,8 @@ public class AdminOrderService {
         order.setStatus(OrderStatus.ASSIGNED);
         return orderRepository.save(order);
     }
+
+    public List<CustomerOrder> getAllOrders() {
+        return orderRepository.findAll();
+    }
 }

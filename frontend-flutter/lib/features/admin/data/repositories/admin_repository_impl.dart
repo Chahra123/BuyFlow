@@ -1,7 +1,9 @@
 import '../../domain/entities/admin_stats.dart';
 import '../datasources/admin_remote_data_source.dart';
+import '../../../commerce/data/models/order_models.dart';
 import '../../domain/repositories/admin_repository.dart';
 import '../../../auth/domain/entities/user.dart';
+
 
 class AdminRepositoryImpl implements AdminRepository {
   final AdminRemoteDataSource remoteDataSource;
@@ -69,5 +71,15 @@ class AdminRepositoryImpl implements AdminRepository {
   @override
   Future<AdminStats> getStats() {
     return remoteDataSource.getStats();
+  }
+
+  @override
+  Future<List<CustomerOrderDto>> getOrders() {
+    return remoteDataSource.getOrders();
+  }
+
+  @override
+  Future<void> assignCourier(int orderId, int courierId) {
+    return remoteDataSource.assignCourier(orderId, courierId);
   }
 }

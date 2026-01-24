@@ -80,6 +80,9 @@ public class DeliveryService {
         }
 
         order.setStatus(OrderStatus.DELIVERED);
+        if (order.getPaymentStatus() == PaymentStatus.UNPAID) {
+            order.setPaymentStatus(PaymentStatus.PAID);
+        }
         return orderRepository.save(order);
     }
 }

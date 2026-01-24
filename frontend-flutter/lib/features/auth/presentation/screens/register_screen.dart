@@ -71,7 +71,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                        Icon(Icons.rocket_launch_outlined, size: 80, color: Colors.white.withOpacity(0.9)),
                        const SizedBox(height: 24),
                        Text(
-                         "Join BuyFlow",
+                         l10n.joinBuyFlow,
                          style: GoogleFonts.outfit(
                            fontSize: 42,
                            fontWeight: FontWeight.bold,
@@ -81,7 +81,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                        ),
                        const SizedBox(height: 12),
                        Text(
-                         "Commencez votre aventure maintenant.",
+                         l10n.adventureStart,
                          textAlign: TextAlign.center,
                          style: GoogleFonts.outfit(
                            fontSize: 18,
@@ -127,16 +127,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           Expanded(
                             child: TextFormField(
                               controller: _firstNameController,
-                              decoration: const InputDecoration(labelText: "Prénom"),
-                              validator: (v) => v!.isEmpty ? "Requis" : null,
+                               decoration: InputDecoration(labelText: l10n.firstName),
+                               validator: (v) => v!.isEmpty ? l10n.fieldRequired : null,
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: TextFormField(
                               controller: _lastNameController,
-                              decoration: const InputDecoration(labelText: "Nom"),
-                              validator: (v) => v!.isEmpty ? "Requis" : null,
+                               decoration: InputDecoration(labelText: l10n.lastName),
+                               validator: (v) => v!.isEmpty ? l10n.fieldRequired : null,
                             ),
                           ),
                         ]),
@@ -171,18 +171,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         else
                           ElevatedButton(
                             onPressed: _register,
-                            child: const Text("Créer mon compte"),
+                            child: Text(l10n.createAccount),
                           ),
                         
                         const SizedBox(height: 32),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text("Déjà un compte ?", style: TextStyle(color: AppColors.textSecondary)),
-                            TextButton(
-                              onPressed: () => context.go('/login'),
-                              child: const Text("Se connecter", style: TextStyle(fontWeight: FontWeight.bold)),
-                            ),
+                             Text(l10n.alreadyHaveAccount, style: TextStyle(color: AppColors.textSecondary)),
+                             TextButton(
+                               onPressed: () => context.go('/login'),
+                               child: Text(l10n.login, style: const TextStyle(fontWeight: FontWeight.bold)),
+                             ),
                           ],
                         ),
                       ],

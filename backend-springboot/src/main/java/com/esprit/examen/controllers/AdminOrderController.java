@@ -20,4 +20,9 @@ public class AdminOrderController {
     public CustomerOrder assign(@PathVariable Long id, @RequestBody(required = false) AssignCourierRequest request) {
         return adminOrderService.assignCourier(id, request);
     }
+
+    @GetMapping
+    public java.util.List<CustomerOrder> getAllOrders() {
+        return adminOrderService.getAllOrders();
+    }
 }

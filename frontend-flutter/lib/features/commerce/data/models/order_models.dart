@@ -1,3 +1,6 @@
+import '../../../auth/data/models/user_model.dart';
+import '../../../auth/domain/entities/user.dart';
+
 class OrderItemDto {
   final int produitId;
   final String? produitLabel;
@@ -62,6 +65,8 @@ class CustomerOrderDto {
   final String? deliveryInstructions;
   final String? qrData;
   final List<OrderItemDto> items;
+  final User? assignedCourier;
+  final User? user; // Customer
 
   const CustomerOrderDto({
     required this.id,
@@ -74,6 +79,8 @@ class CustomerOrderDto {
     this.deliveryInstructions,
     this.qrData,
     this.items = const [],
+    this.assignedCourier,
+    this.user,
   });
 
   factory CustomerOrderDto.fromJson(Map<String, dynamic> json) {
@@ -89,6 +96,8 @@ class CustomerOrderDto {
       deliveryInstructions: json['deliveryInstructions']?.toString() ?? json['instructions']?.toString(),
       qrData: json['qrData']?.toString(),
       items: itemsJson.map((e) => OrderItemDto.fromJson(Map<String, dynamic>.from(e))).toList(),
+      assignedCourier: json['assignedCourier'] != null ? UserModel.fromJson(json['assignedCourier']) : null,
+      user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
     );
   }
 }
